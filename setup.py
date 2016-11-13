@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup, Command, Extension
-import unittest
+import pytest
 from os.path import splitext, basename, join as pjoin
 import os, sys
 
@@ -15,8 +15,8 @@ setup(name = 'dbloader',
       author = 'Phil Hildebrand',
       author_email = 'phil.hildebrand@gmail.com',
       license = 'mit',
-      packages = ['tests'],
+      packages = ['dbloader'],
       install_requires = [ requirements ],
-      test_suite="tests",
+      test_suite="pytest",
       use_2to3=True
 )
