@@ -30,4 +30,6 @@ script:
   - ssh-keygen -y -f /home/travis/.ssh/id_rsa > /home/travis/.ssh/id_rsa.pub
   - cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
   - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
+  - cat /etc/mongod.conf
+  - sudo service mongod restart
   - pytest --capture=no dbloader
