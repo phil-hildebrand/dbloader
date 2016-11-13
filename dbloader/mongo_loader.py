@@ -26,9 +26,6 @@ inserts = 100
 deletes = 100
 updates = 100
 selects = 100
-concurrency = 4
-host = '192.168.2.1'
-port = 27017
 
 def big_string(chars):
     return ''.join(random.choice(string.ascii_letters)
