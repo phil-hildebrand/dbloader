@@ -12,15 +12,19 @@ env:
   global:
     - CI_NODE_TOTAL=3
   matrix:
-  - MONGO_TEST=2.6 CI_NODE_INDEX=0
-  - MONGO_TEST=3.0 CI_NODE_INDEX=1
-  - MONGO_TEST=3.2 CI_NODE_INDEX=2
-  - MYSQL_TEST=5.5 CI_NODE_INDEX=0
-  - MYSQL_TEST=5.6 CI_NODE_INDEX=1
-  - MYSQL_TEST=5.7 CI_NODE_INDEX=2
+  - MONGO_TEST=3.0.14 CI_NODE_INDEX=1
+  - MONGO_TEST=3.2.10 CI_NODE_INDEX=2
+
+before_script:
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+  - echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+  - echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+  - apt-get update
 
 # command to build and run tests
 script:
   - ssh-keygen -y -f /home/travis/.ssh/id_rsa > /home/travis/.ssh/id_rsa.pub
   - cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
-  - pytest --capture=no tests
+  - apt-get install -y mongodb-org=$MONGO_TEST
+  - pytest --capture=no dbloader

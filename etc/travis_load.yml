@@ -1,0 +1,8 @@
+---
+server:
+ - name: localhost
+   type: mongo
+   port: 27017
+   user: none
+   pass: none
+   concurrency: 10
