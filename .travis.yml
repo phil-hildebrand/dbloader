@@ -29,5 +29,5 @@ before_script:
 script:
   - ssh-keygen -y -f /home/travis/.ssh/id_rsa > /home/travis/.ssh/id_rsa.pub
   - cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
-  - sudo apt-get install -y --force=yes mongodb-org=$MONGO_TEST
+  - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
   - pytest --capture=no dbloader
