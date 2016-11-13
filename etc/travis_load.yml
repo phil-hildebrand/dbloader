@@ -1,6 +1,6 @@
 ---
 server:
- - name: localhost
+ - name: 127.0.0.1
    type: mongo
    port: 27017
    user: none
