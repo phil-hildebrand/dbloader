@@ -25,4 +25,10 @@ class TestDBLoader():
             passwd = options['server'][0]['pass']
         else:
             fail
+        print ('setting host to %s' % server)
+        dbloader.mongo_loader.host = server
+        dbloader.mongo_loader.port = port
+        dbloader.mongo_loader.inserts = 150
+        dbloader.mongo_loader.deletes = 150
+        dbloader.mongo_loader.concurrency = 10
         dbloader.main()

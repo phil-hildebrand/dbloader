@@ -48,8 +48,6 @@ def load_config(config):
 
 def main():
     logger.warning('Starting DB Load Tests')
-    mongo_loader.concurrency = 10
-    mongo_loader.inserts = 250
     mongo_loader.load_run()
 
 if __name__ == "__main__":
@@ -73,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--verbose', action = 'store_true', help = 'Debug Mode')
     args = parser.parse_args()
 
-    setup_logs(args.logs, args.verbose)
+    setup_logs(args.log, args.verbose)
     logger.warning('Starting DB Load Tests')
     if (args.config):
         options = load_config(args.config)
@@ -88,9 +86,10 @@ if __name__ == "__main__":
             logger.error('Unable to load config file')
     else:
         logger.warning('Config file %s not found, using command line options' % args.config)
-    db = get_connection()
-    if db:
-        logger.warning('Connection: %s' % db)
+
+    mongo_loader.host = args.server
+    mongo_loader.port = args.port
     mongo_loader.concurrency = 10
     mongo_loader.inserts = 250
+    mongo_loader.deletes = 250
     mongo_loader.load_run()

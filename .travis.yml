@@ -1,3 +1,4 @@
+dist: trusty
 language: python
 sudo: required
 python:
@@ -12,19 +13,20 @@ env:
   global:
     - CI_NODE_TOTAL=3
   matrix:
-  - MONGO_TEST=3.0.14 CI_NODE_INDEX=1
-  - MONGO_TEST=3.2.10 CI_NODE_INDEX=2
+  - MONGO_TEST=2.6.9 CI_NODE_INDEX=1
+  - MONGO_TEST=3.0.14 CI_NODE_INDEX=2
+  - MONGO_TEST=3.2.10 CI_NODE_INDEX=3
 
 before_script:
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+  - echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
   - echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
   - echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
   - sudo apt-get update
 
 # command to build and run tests
 script:
-  - ssh-keygen -y -f /home/travis/.ssh/id_rsa > /home/travis/.ssh/id_rsa.pub
-  - cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
-  - sudo apt-get install -y mongodb-org=$MONGO_TEST
+  - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
+  - sudo service mongod restart
   - pytest --capture=no dbloader
