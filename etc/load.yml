@@ -6,3 +6,5 @@ server:
    user: none
    pass: none
    concurrency: 4
+   inserts: 250
+   deletes: 200

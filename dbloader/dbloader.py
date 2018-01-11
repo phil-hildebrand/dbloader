@@ -81,15 +81,20 @@ if __name__ == "__main__":
             args.type = options['server'][0]['type']
             args.port = options['server'][0]['port']
             args.user = options['server'][0]['user']
+            args.concurrency = options['server'][0]['concurrency']
             args.passwd = options['server'][0]['pass']
+            if options['server'][0]['inserts']:
+                mongo_loader.inserts = options['server'][0]['inserts']
+            if options['server'][0]['deletes']:
+                mongo_loader.deletes = options['server'][0]['deletes']
         else:
             logger.error('Unable to load config file')
     else:
         logger.warning('Config file %s not found, using command line options' % args.config)
+        mongo_loader.inserts = 250
+        mongo_loader.deletes = 250
 
     mongo_loader.host = args.server
     mongo_loader.port = args.port
-    mongo_loader.concurrency = 10
-    mongo_loader.inserts = 250
-    mongo_loader.deletes = 250
+    mongo_loader.concurrency = args.concurrency
     mongo_loader.load_run()
