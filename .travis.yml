@@ -3,6 +3,7 @@ language: python
 sudo: required
 python:
   - "2.7"
+  - "3.6"
 # command to install dependencies
 install:
   - pip install -r requirements.txt
@@ -29,4 +30,5 @@ before_script:
 script:
   - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
   - sudo service mongod restart
-  - pytest --capture=no dbloader
+  - python setup.py install
+  - pytest --capture=no tests
