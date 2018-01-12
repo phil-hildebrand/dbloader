@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, "./loader")
-import loader as l
+import dbloader.loader as l
 
 l.host = 'mine'
 l.inserts = 50
