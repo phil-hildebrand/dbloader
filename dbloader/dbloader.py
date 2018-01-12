@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import argparse
 import logging
 import mongo_loader

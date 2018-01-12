@@ -29,4 +29,5 @@ before_script:
 script:
   - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
   - sudo service mongod restart
-  - pytest --capture=no dbloader
+  - python setup.py install
+  - pytest --capture=no tests
