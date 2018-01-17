@@ -23,4 +23,8 @@ cd /vagrant
 pip install -r requirements.txt
 python setup.py install
 pytest -v tests
+. /vagrant/venv/bin/activate
+python setup.py install
+pytest -v tests
+pip install -r requirements.txt
 echo ". /vagrant/p3env/bin/activate; cd /vagrant" >> ~vagrant/.bashrc
