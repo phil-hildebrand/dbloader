@@ -1,123 +1,77 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pymongo as m
-from multiprocessing import Pool
+from gevent import monkey
+monkey.patch_all()
+import gevent
+from gevent.pool import Pool
 import json
 import random
+import pymongo as m
 import string
 import sys
 import time
-import types
-
-db_prefix = 'mongo_load_'
-global test_collections
-global host
-global port
-global inserts
-global deletes
-global updates
-global selects
-global concurrency
-
-test_collections = ['ltc1', 'ltc2', 'ltc3']
-inserts = 100
-deletes = 100
-updates = 100
-selects = 100
+from random import randint
+from time import sleep
+import loader.loader as l
 
 
-def big_string(chars):
-    ''' Generate a random string '''
 
-    return ''.join(random.choice(string.ascii_letters)
-                   for _ in range(chars))
+class mongoLoader(l.Loader):
 
 
-def get_connection(host, port):
-    ''' Get a mongo connection '''
-
-    conn = m.MongoClient(host, port,
-                         connectTimeoutMS=2000,
-                         socketTimeoutMS=2000)
-    return(conn)
+    def __init__(self):
+        l.Loader.__init__(self)
+        self.dbtype = 'MongoDB'
+        self.test_collections = ['ltc1', 'ltc2', 'ltc3']
+        self.db_prefix = 'mongo_load_'
 
 
-def load_collection_docs(databases):
-    '''We should be able to insert data into a collection for load tests'''
+    def get_connection(self, host, port):
+        '''
+        Get a mongo connection
+        '''
+        try:
+            self.conn = m.MongoClient(self.host,
+                                      self.port,
+                                      connectTimeoutMS=2000,
+                                      socketTimeoutMS=2000)
 
-    load_db = databases
-    total_insert = 0
-    avg_insert = 0
-    load_conn = get_connection(host, port)
-    db = load_conn[load_db]
-
-    for collections in test_collections:
-        start_time = time.time()
-        for ins in range(inserts):
-            insert_time = time.time()
-            my_text = big_string(100)
-            try:
-                x = db[collections].insert_one({"type": "Load Test",
-                                                "randString": my_text,
-                                                "created": insert_time,
-                                                "concurrency": 1})
-
-            except Exception as e:
-                print ('Load Insert Failed: (%s)' % e)
-
-            inserted_time = time.time()
-            avg_insert = (inserted_time - start_time) / (ins + 1)
-        total_insert = inserted_time
-
-        total_insert_duration = total_insert - start_time
-    return (total_insert_duration)
+        except Exception:
+            print ('Unable to connect to database')
+            return False
+        return(self.conn)
 
 
-def delete_collection_docs(databases):
-    '''We should be able to delete a subset of documents from a collection'''
+    def insert(self, database, object):
+        '''
+        Insert a single record
+        '''
+        insert_time = time.time()
+        db = self.conn[database]
+        try:
+            random_text = self.big_string(100)
+            result = db[object].insert_one({"type": "Load Test",
+                                            "randString": random_text,
+                                            "created": insert_time,
+                                            "concurrency": 1})
 
-    delete_db = databases
-    total_delete = 0
-    avg_delete = 0
-    deleted = 0
-    del_conn = get_connection(host, port)
-    db = del_conn[delete_db]
-
-    for collections in test_collections:
-        start_time = time.time()
-        for delete in range(deletes):
-            delete_time = time.time()
-            try:
-                result = db['mongo_collection'].delete_one({"randString": {"$exists": "true"}})
-                deleted += result.deleted_count
-
-            except Exception as e:
-                print ('Delete Failed: (%s)' % e)
-
-            deleted_time = time.time()
-            avg_delete = (deleted_time - start_time) / (delete + 1)
-        total_delete = deleted_time
-
-        total_delete_duration = total_delete - start_time
-    return (total_delete_duration)
+        except Exception:
+            print ('Unable to insert a record %s', str(result))
+            return False
+        return (time.time() - insert_time)
 
 
-def load_run():
-    '''Run load test itteration'''
+    def delete(self, database, object):
+        '''
+        Delete a single record
+        '''
+        delete_time = time.time()
+        db = self.conn[database]
+        try:
+            result = db[object].delete_one({"randString": {"$exists": "true"}})
 
-    pool = Pool(processes=concurrency)
-    start_time = time.time()
-    test_dbs = []
-    load_dur = []
-    delete_dur = []
-    for run in range(concurrency):
-        db = db_prefix + str(run)
-        test_dbs.append(db)
-    for load_duration in pool.imap_unordered(load_collection_docs, test_dbs):
-        load_dur.append(load_duration)
-    for delete_duration in pool.imap_unordered(delete_collection_docs,
-                                               test_dbs):
-        delete_dur.append(delete_duration)
-    full_run_time = time.time() - start_time
-    return(load_dur, delete_dur)
+        except Exception:
+            print ('Unable to delete a record')
+            raise Exception
+        return (time.time() - delete_time)

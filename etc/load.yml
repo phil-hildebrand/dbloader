@@ -1,8 +1,8 @@
 ---
 server: 
- - name: 192.168.2.1
-   type: mongo
-   port: 27017
+ - name: daltstrethinkdb01
+   type: rethink
+   port: 29015
    user: none
    pass: none
    concurrency: 4

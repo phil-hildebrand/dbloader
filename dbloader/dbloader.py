@@ -3,7 +3,9 @@
 import sys
 import argparse
 import logging
+import loader.loader
 import mongo.mongo_loader as ml
+import rethink.rethink_loader as rl
 import random
 import string
 import os
@@ -54,21 +56,34 @@ def load_config(config):
     return(False)
 
 
-def main():
+def main(dbtype, ldr):
     ''' Main program '''
 
     logger.warning('Starting DB Load Tests')
     load_duration = []
     delete_duration = []
-    load_duration, delete_duration = ml.load_run()
-    logger.warning('%d load runs in %4.2f time with avg run of %4.2f',
-                   len(load_duration),
-                   sum(load_duration),
-                   len(load_duration) / sum(load_duration))
-    logger.warning('%d delete runs in %4.2f time with avg run of %4.2f',
-                   len(delete_duration),
-                   sum(delete_duration),
-                   len(delete_duration) / sum(delete_duration))
+    if dbtype == 'mongo':
+        logger.warning('Loading Mongo')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    if dbtype == 'rethink':
+        logger.warning('Loading Rethink')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    load_duration, delete_duration = ldr.load_run()
+
+    if len(load_duration) == 0:
+        logger.warning('0 load runs recorded')
+    else:
+        logger.warning('%d load runs in %4.2f time with avg run of %4.2f',
+                       len(load_duration),
+                       sum(load_duration),
+                       len(load_duration) / sum(load_duration))
+    if len(delete_duration) == 0:
+        logger.warning('0 delete runs recorded')
+    else:
+        logger.warning('%d delete runs in %4.2f time with avg run of %4.2f',
+                       len(delete_duration),
+                       sum(delete_duration),
+                       len(delete_duration) / sum(delete_duration))
     logger.warning('Completed DB Load Tests')
 
 if __name__ == "__main__":
@@ -121,10 +136,19 @@ if __name__ == "__main__":
         ml.inserts = 250
         ml.deletes = 250
 
-    ml.host = args.server
-    ml.port = args.port
-    ml.concurrency = args.concurrency
-    ml.load_run()
+    if args.type == 'mongo':
+        ml.host = args.server
+        ml.port = args.port
+        ml.concurrency = args.concurrency
+        logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
+        ml.load_run()
+    if args.type == 'rethink':
+        ldr = rl.rethinkLoader()
+        ldr.host = args.server
+        ldr.port = args.port
+        ldr.concurrency = args.concurrency
+        logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
+        ldr.load_run()
     logger.warning('%d load runs in %4.2f time with avg run of %4.2f',
                    len(load_duration),
                    sum(load_duration),

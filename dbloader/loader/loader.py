@@ -16,14 +16,16 @@ from time import sleep
 class Loader(object):
 
     def __init__(self):
-        db_prefix = 'load_'
-        test_objects = ['ltc1', 'ltc2', 'ltc3']
+        self.databases = ['dbl_1', 'dbl_2', 'dbl_3']
+        self.objects = ['ltc1', 'ltc2', 'ltc3']
 
-        concurrency = 20
-        inserts = 100
-        deletes = 100
-        updates = 100
-        selects = 100
+        self.concurrency = 20
+        self.inserts = 100
+        self.deletes = 100
+        self.updates = 100
+        self.selects = 100
+        self.host = 'localhost'
+        self.port = 3306
 
     def big_string(self, chars):
         return ''.join(random.choice(string.ascii_letters)
@@ -59,44 +61,44 @@ class Loader(object):
             return False
         return (time.time() - delete_time)
 
-    def insert_some(self, databases, objects):
+    def insert_some(self):
         '''Load data into a table/collection/bucket'''
 
-        load_conn = self.get_connection(host, port)
+        load_conn = self.get_connection(self.host, self.port)
         results = []
 
-        pool = Pool(concurrency)
-        for database in databases:
-            for object in objects:
-                for ins in range(inserts):
-                    results.append(pool.spawn(self.delete, database, object))
+        pool = Pool(self.concurrency)
+        for database in self.databases:
+            for object in self.objects:
+                for ins in range(self.inserts):
+                    results.append(pool.spawn(self.insert, database, object))
         pool.join()
         inserted = [r.get() for r in results]
         return (inserted)
 
-    def delete_some(self, databases, objects):
+    def delete_some(self):
         '''Delete a subset of data from a table/collection/bucket'''
 
-        del_conn = self.get_connection(host, port)
+        del_conn = self.get_connection(self.host, self.port)
         results = []
 
-        pool = Pool(concurrency)
-        for database in databases:
-            for object in objects:
-                for delete in range(deletes):
+        pool = Pool(self.concurrency)
+        for database in self.databases:
+            for object in self.objects:
+                for delete in range(self.deletes):
                     results.append(pool.spawn(self.delete, database, object))
         pool.join()
         deleted = [r.get() for r in results]
         return (deleted)
 
-    def load_run(self, databases, objects, itterations):
+    def load_run(self):
         '''Run load test'''
         total_inserted = []
         total_deleted = []
-        for run in range(1, itterations):
-            inserted = gevent.spawn(self.insert_some, databases, objects)
-            deleted = gevent.spawn(self.delete_some, databases, objects)
-            gevent.wait()
-            total_inserted.append(inserted.get())
-            total_deleted.append(deleted.get())
+        for run in range(1, self.itterations):
+            inserted = gevent.spawn(self.insert_some)
+            deleted = gevent.spawn(self.delete_some)
+            gevent.wait(timeout=5)
+            total_inserted += inserted.get()
+            total_deleted += deleted.get()
         return(total_inserted, total_deleted)
