@@ -9,17 +9,17 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(name = 'dbloader',
-      version = '0.2.0',
+      version = '0.3.0',
       description = 'Database Load Testing',
       url = 'http://github.com/phil-hildebrand/dbloader',
       author = 'Phil Hildebrand',
       author_email = 'phil.hildebrand@gmail.com',
       license = 'mit',
-      packages = ['dbloader', 'loader', 'mongo_loader', 'rethink_loader'],
+      packages = ['dbloader', 'loader.loader', 'mongo.mongo_loader', 'rethink.rethink_loader'],
       package_dir = {'dbloader': 'dbloader',
-                     'loader': 'dbloader/loader',
-                     'mongo_loader' : 'dbloader/mongo',
-                     'rethink_loader' : 'dbloader/rethink'},
+                     'loader.loader': 'dbloader/loader',
+                     'mongo.mongo_loader' : 'dbloader/mongo',
+                     'rethink.rethink_loader' : 'dbloader/rethink'},
       install_requires = [ requirements ],
       test_suite="pytest",
       use_2to3=True
