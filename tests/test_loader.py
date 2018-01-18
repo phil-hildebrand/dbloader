@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import json
@@ -37,8 +37,8 @@ class TestDBLoader():
             ldr.port = port
             ldr.databases = ['rt_db_1', 'rt_db_2']
             ldr.tables = ['ltbl_1', 'ltbl_2']
-        ldr.inserts = 150
-        ldr.deletes = 150
+        ldr.inserts = 50
+        ldr.deletes = 5
         ldr.concurrency = 10
-        ldr.itterations = 5
+        ldr.itterations = 2
         dbl.main(dbtype, ldr)

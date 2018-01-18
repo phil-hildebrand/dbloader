@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, "./mongo")
-import mongo_loader_new as m
+import mongo_loader as m
 
 ldr = m.mongoLoader()
 ldr.host = 'localhost'
