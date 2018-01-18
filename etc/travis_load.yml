@@ -6,5 +6,13 @@ server:
    user: none
    pass: none
    concurrency: 10
-   inserts: 250
-   deletes: 200
+   inserts: 100
+   deletes: 10
+ - name: 127.0.0.1
+   type: rethink
+   port: 28015
+   user: none
+   pass: none
+   concurrency: 10
+   inserts: 100
+   deletes: 10

@@ -7,17 +7,23 @@ import gevent
 from gevent.pool import Pool
 import random
 import string
-import sys
 import time
-from random import randint
-from time import sleep
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Loader(object):
+    '''
+    A class for load testing databases
+    '''
 
     def __init__(self):
+        '''
+        Initialize a Loader
+        '''
         self.databases = ['dbl_1', 'dbl_2', 'dbl_3']
-        self.objects = ['ltc1', 'ltc2', 'ltc3']
+        self.tables = ['ltc1', 'ltc2', 'ltc3']
 
         self.concurrency = 20
         self.inserts = 100
@@ -28,77 +34,164 @@ class Loader(object):
         self.port = 3306
 
     def big_string(self, chars):
+        '''
+        Build some randome data
+        '''
         return ''.join(random.choice(string.ascii_letters)
                        for _ in range(chars))
 
     def get_connection(self, host, port):
+        '''
+        Get a connection to a database
+        '''
         try:
             self.conn = "connected"
 
         except Exception:
-            print ('Unable to connect to database')
+            logger.exception('Unable to connect to database')
             return False
         return(self.conn)
 
-    def insert(self, database, object):
-        insert_time = time.time()
+    def insert(self, database, table):
+        '''
+        Insert a record
+        '''
+        start_time = time.time()
         try:
             random_text = self.big_string(100)
             result = 'insert data'
 
         except Exception:
-            print ('Unable to insert a record')
+            logger.exception('Unable to insert a record')
             return False
-        return (time.time() - insert_time)
+        return (time.time() - start_time)
 
-    def delete(self, database, object):
-        delete_time = time.time()
+    def delete(self, database, table):
+        '''
+        Delete a record
+        '''
+        start_time = time.time()
         try:
             result = 'delete data'
 
         except Exception:
-            print ('Unable to delete a record')
+            logger.exception('Unable to delete a record')
             return False
-        return (time.time() - delete_time)
+        return (time.time() - start_time)
+
+    def update(self, database, table):
+        '''
+        update a record
+        '''
+        start_time = time.time()
+        try:
+            result = 'update data'
+
+        except Exception:
+            logger.exception('Unable to update a record')
+            return False
+        return (time.time() - start_time)
+
+    def select(self, database, table):
+        '''
+        select a record
+        '''
+
+        start_time = time.time()
+        try:
+            result = 'select data'
+
+        except Exception:
+            logger.exception('Unable to select a record')
+            return False
+        return (time.time() - start_time)
 
     def insert_some(self):
-        '''Load data into a table/collection/bucket'''
+        '''
+        Load data into a table/collection/bucket
+        '''
 
-        load_conn = self.get_connection(self.host, self.port)
+        conn = self.get_connection(self.host, self.port)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
-            for object in self.objects:
+            for table in self.tables:
                 for ins in range(self.inserts):
-                    results.append(pool.spawn(self.insert, database, object))
+                    results.append(pool.spawn(self.insert, database, table))
         pool.join()
         inserted = [r.get() for r in results]
         return (inserted)
 
     def delete_some(self):
-        '''Delete a subset of data from a table/collection/bucket'''
+        '''
+        Delete a subset of data from a table/collection/bucket
+        '''
 
-        del_conn = self.get_connection(self.host, self.port)
+        conn = self.get_connection(self.host, self.port)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
-            for object in self.objects:
+            for table in self.tables:
                 for delete in range(self.deletes):
-                    results.append(pool.spawn(self.delete, database, object))
+                    results.append(pool.spawn(self.delete, database, table))
         pool.join()
         deleted = [r.get() for r in results]
         return (deleted)
 
+    def update_some(self):
+        '''
+        Update a subset of data from a table/collection/bucket
+        '''
+
+        conn = self.get_connection(self.host, self.port)
+        results = []
+
+        pool = Pool(self.concurrency)
+        for database in self.databases:
+            for table in self.tables:
+                for delete in range(self.updates):
+                    results.append(pool.spawn(self.update, database, table))
+        pool.join()
+        updated = [r.get() for r in results]
+        return (updated)
+
+    def select_some(self):
+        '''
+        Select a subset of data from a table/collection/bucket
+        '''
+
+        conn = self.get_connection(self.host, self.port)
+        results = []
+
+        pool = Pool(self.concurrency)
+        for database in self.databases:
+            for table in self.tables:
+                for delete in range(self.selects):
+                    results.append(pool.spawn(self.select, database, table))
+        pool.join()
+        selected = [r.get() for r in results]
+        return (selected)
+
     def load_run(self):
-        '''Run load test'''
+        '''
+        Run load test
+        '''
+
         total_inserted = []
         total_deleted = []
+        total_updated = []
+        total_selected = []
+        logger.debug('Running full Load test')
         for run in range(1, self.itterations):
             inserted = gevent.spawn(self.insert_some)
             deleted = gevent.spawn(self.delete_some)
+            updated = gevent.spawn(self.update_some)
+            selected = gevent.spawn(self.select_some)
             gevent.wait(timeout=5)
             total_inserted += inserted.get()
             total_deleted += deleted.get()
-        return(total_inserted, total_deleted)
+            total_updated += updated.get()
+            total_selected += selected.get()
+        return(total_inserted, total_deleted, total_updated, total_selected)

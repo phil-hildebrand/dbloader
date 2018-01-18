@@ -3,94 +3,122 @@
 
 from gevent import monkey
 monkey.patch_all()
-import gevent
-from gevent.pool import Pool
-import random
-import rethinkdb as rdb
-import string
-import sys
+import json
+import rethinkdb as r
 import time
-from random import randint
-from time import sleep
 import loader.loader as l
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class rethinkLoader(l.Loader):
-
+class RethinkLoader(l.Loader):
 
     def __init__(self):
+        '''
+        Initialize a RethinkLoader
+        '''
         l.Loader.__init__(self)
         self.dbtype = 'RethinkDB'
 
-
     def get_connection(self, host, port):
+        '''
+        Get a rethink connection
+        '''
         try:
-            self.conn = rdb.connect(self.host, self.port).repl()
+            r.set_loop_type('gevent')
+            self.conn = r.connect(self.host, self.port)
 
         except Exception:
-            print ('Unable to connect to database')
+            logger.exception('Unable to connect to database')
             return False
         return(self.conn)
 
-    def insert(self, database, object):
-        insert_time = time.time()
+    def create_if_not_exists(self, conn):
+        '''
+        If the databases or tables do not exist, create them
+        '''
+        if self.conn is None:
+            self.conn = self.get_connection()
+
+        try:
+            dblist = r.db_list().run(self.conn)
+            for database in self.databases:
+                for table in self.tables:
+                    if database not in dblist:
+                        r.db_create(database).run(self.conn)
+                        tablist = r.db(database).table_list().run(self.conn)
+                        if table not in tablist:
+                            r.db(database).table_create(table).run(self.conn)
+                    else:
+                        tablist = r.db(database).table_list().run(self.conn)
+                        if table not in tablist:
+                            r.db(database).table_create(table).run(self.conn)
+
+        except Exception:
+            logger.exception('Unable check and or setup databases/tables')
+            return False
+
+        return True
+
+    def insert(self, database, table):
+        '''
+        Insert a single record
+        '''
+
+        start_time = time.time()
         try:
             random_text = self.big_string(100)
-            result = 'overridden insert data'
+            result = r.db(database).table(table).insert(
+                {"type": "Load Test",
+                 "randString": random_text,
+                 "created": start_time,
+                 "concurrency": 1},
+                conflict="update").run(self.conn)
 
         except Exception:
-            print ('Unable to insert a record')
+            logger.exception('Unable to insert a record')
             return False
-        return (time.time() - insert_time)
+        return (time.time() - start_time)
 
-    def delete(self, database, object):
-        delete_time = time.time()
+    def delete(self, database, table):
+        '''
+        Delete a single record
+        '''
+
+        start_time = time.time()
         try:
-            result = 'overridden delete data'
+            result = r.db(database).table(table).limit(1).delete().run(self.conn)
 
         except Exception:
-            print ('Unable to delete a record')
-            return False
-        return (time.time() - delete_time)
+            logger.exception('Unable to delete a record')
+            raise Exception
+        return (time.time() - start_time)
 
-#    def insert_some(self, databases, objects):
-#        '''Load data into a table/collection/bucket'''
-#
-#        load_conn = self.get_connection(host, port)
-#        results = []
-#
-#        pool = Pool(concurrency)
-#        for database in databases:
-#            for object in objects:
-#                for ins in range(inserts):
-#                    results.append(pool.spawn(self.delete, database, object))
-#        pool.join()
-#        inserted = [r.get() for r in results]
-#        return (inserted)
+    def update(self, database, table):
+        '''
+        Update a single record
+        '''
 
-#    def delete_some(self, databases, objects):
-#        '''Delete a subset of data from a table/collection/bucket'''
-#
-#        del_conn = self.get_connection(host, port)
-#        results = []
-#
-#        pool = Pool(concurrency)
-#        for database in databases:
-#            for object in objects:
-#                for delete in range(deletes):
-#                    results.append(pool.spawn(self.delete, database, object))
-#        pool.join()
-#        deleted = [r.get() for r in results]
-#        return (deleted)
+        start_time = time.time()
+        try:
+            result = r.db(database).table(table).limit(1).update({'type': 'LTU'}).run(self.conn)
 
-#    def load_run(self, databases, objects, itterations):
-#        '''Run load test'''
-#        total_inserted = []
-#        total_deleted = []
-#        for run in range(1, itterations):
-#            inserted = gevent.spawn(self.insert_some, databases, objects)
-#            deleted = gevent.spawn(self.delete_some, databases, objects)
-#            gevent.wait()
-#            total_inserted.append(inserted.get())
-#            total_deleted.append(deleted.get())
-#        return(total_inserted, total_deleted)
+        except Exception:
+            logger.exception('Unable to update a record')
+            raise Exception
+        return (time.time() - start_time)
+
+    def select(self, database, table):
+        '''
+        Select a single record
+        '''
+
+        start_time = time.time()
+        try:
+            result = r.db(database).table(table).limit(1).run(self.conn)
+
+        except Exception:
+            logger.exception('Unable to select a record')
+            raise Exception
+        return (time.time() - start_time)
