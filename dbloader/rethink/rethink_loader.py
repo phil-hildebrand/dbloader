@@ -42,16 +42,15 @@ class RethinkLoader(l.Loader):
             self.conn = self.get_connection()
 
         try:
-            dblist = r.db_list().run(self.conn)
             for database in self.databases:
+                dblist = r.db_list().run(self.conn)
                 for table in self.tables:
+                    tablist = r.db(database).table_list().run(self.conn)
                     if database not in dblist:
                         r.db_create(database).run(self.conn)
-                        tablist = r.db(database).table_list().run(self.conn)
                         if table not in tablist:
                             r.db(database).table_create(table).run(self.conn)
                     else:
-                        tablist = r.db(database).table_list().run(self.conn)
                         if table not in tablist:
                             r.db(database).table_create(table).run(self.conn)
             self.ready = True

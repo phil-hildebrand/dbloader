@@ -219,6 +219,9 @@ class Loader(object):
         total_updated = []
         total_selected = []
         logger.debug('Running full Load test')
+        self.conn = self.get_connection(self.host, self.port)
+        if not self.ready:
+            self.create_if_not_exists(self.conn)
         for run in range(1, self.itterations):
             inserted = gevent.spawn(self.insert_some)
             deleted = gevent.spawn(self.delete_some)
