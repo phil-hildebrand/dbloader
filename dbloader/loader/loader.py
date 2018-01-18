@@ -32,6 +32,7 @@ class Loader(object):
         self.selects = 100
         self.host = 'localhost'
         self.port = 3306
+        self.ready = False
 
     def big_string(self, chars):
         '''
@@ -51,6 +52,32 @@ class Loader(object):
             logger.exception('Unable to connect to database')
             return False
         return(self.conn)
+
+    def create_if_not_exists(self, conn):
+        '''
+        If the databases or tables do not exist, create them
+        '''
+        if self.conn is None:
+            self.conn = "connected"
+
+        try:
+            for database in self.databases:
+                for table in self.tables:
+                    if database:
+                        if table:
+                            self.ready = True
+                    else:
+                        if table:
+                            self.ready = True
+            self.ready = True
+
+        except Exception:
+            logger.exception('Unable check and or setup databases/tables')
+            self.ready = False
+            exit(2)
+
+        return True
+
 
     def insert(self, database, table):
         '''
@@ -111,7 +138,9 @@ class Loader(object):
         Load data into a table/collection/bucket
         '''
 
-        conn = self.get_connection(self.host, self.port)
+        self.conn = self.get_connection(self.host, self.port)
+        if not self.ready:
+            self.create_if_not_exists(self.conn)
         results = []
 
         pool = Pool(self.concurrency)
@@ -128,7 +157,9 @@ class Loader(object):
         Delete a subset of data from a table/collection/bucket
         '''
 
-        conn = self.get_connection(self.host, self.port)
+        self.conn = self.get_connection(self.host, self.port)
+        if not self.ready:
+            self.create_if_not_exists(self.conn)
         results = []
 
         pool = Pool(self.concurrency)
@@ -145,7 +176,9 @@ class Loader(object):
         Update a subset of data from a table/collection/bucket
         '''
 
-        conn = self.get_connection(self.host, self.port)
+        self.conn = self.get_connection(self.host, self.port)
+        if not self.ready:
+            self.create_if_not_exists(self.conn)
         results = []
 
         pool = Pool(self.concurrency)
@@ -162,7 +195,9 @@ class Loader(object):
         Select a subset of data from a table/collection/bucket
         '''
 
-        conn = self.get_connection(self.host, self.port)
+        self.conn = self.get_connection(self.host, self.port)
+        if not self.ready:
+            self.create_if_not_exists(self.conn)
         results = []
 
         pool = Pool(self.concurrency)

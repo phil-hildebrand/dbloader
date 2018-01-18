@@ -54,10 +54,12 @@ class RethinkLoader(l.Loader):
                         tablist = r.db(database).table_list().run(self.conn)
                         if table not in tablist:
                             r.db(database).table_create(table).run(self.conn)
+            self.ready = True
 
         except Exception:
             logger.exception('Unable check and or setup databases/tables')
-            return False
+            self.ready = False
+            exit(2)
 
         return True
 
