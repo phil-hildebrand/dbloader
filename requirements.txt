@@ -3,4 +3,4 @@ pymongo>=3.6
 pymysql>=0.8.0
 pyyaml>=3.12
 pytest
-rethinkdb<=2.6
+rethinkdb~=2.3

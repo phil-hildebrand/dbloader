@@ -24,6 +24,7 @@ cd /vagrant
 pip install -r requirements.txt
 python setup.py install
 pytest -v tests
+sudo service rethinkdb status
 . /vagrant/venv/bin/activate
 pip install -r requirements.txt
 python setup.py install
