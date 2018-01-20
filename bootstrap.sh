@@ -18,13 +18,15 @@ sudo apt-get install -y rethinkdb
 sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample > /etc/rethinkdb/instances.d/instance1.conf
 sudo sed -i "s/^\(.*bindIp.*\)/# \1/" /etc/mongod.conf
 sudo service mongod restart
+sudo service rethinkdb restart
 . /vagrant/p3env/bin/activate
 cd /vagrant
 pip install -r requirements.txt
 python setup.py install
 pytest -v tests
+sudo service rethinkdb status
 . /vagrant/venv/bin/activate
+pip install -r requirements.txt
 python setup.py install
 pytest -v tests
-pip install -r requirements.txt
 echo ". /vagrant/p3env/bin/activate; cd /vagrant" >> ~vagrant/.bashrc
