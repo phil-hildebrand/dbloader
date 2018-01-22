@@ -14,11 +14,18 @@ wget -qO- https://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install -y mongodb-org
 # sudo apt-get install -y postgresql
-# sudo apt-get install -y rethinkdb
+sudo apt-get install -y rethinkdb
+sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample > /etc/rethinkdb/instances.d/instance1.conf
 sudo sed -i "s/^\(.*bindIp.*\)/# \1/" /etc/mongod.conf
 sudo service mongod restart
+sudo service rethinkdb restart
 . /vagrant/p3env/bin/activate
 cd /vagrant
+pip install -r requirements.txt
+python setup.py install
+pytest -v tests
+sudo service rethinkdb status
+. /vagrant/venv/bin/activate
 pip install -r requirements.txt
 python setup.py install
 pytest -v tests
