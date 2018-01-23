@@ -111,8 +111,8 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--server', default='localhost',
                         help='Database Server / URL (default=localhost)')
     parser.add_argument('-t', '--type', default='mongo',
-                        choices=['mongo', 'mysql'],
-                        help='Database Type [mongo|mysql] (default=mongo)')
+                        choices=['mongo', 'mysql', 'rethink'],
+                        help='Database Type [mongo|mysql|rethink] (default=mongo)')
     parser.add_argument('-P', '--port', default=3306,
                         help='Database port (default=3306/27017/29015)')
     parser.add_argument('-u', '--user',

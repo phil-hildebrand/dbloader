@@ -8,3 +8,8 @@ server:
    concurrency: 4
    inserts: 250
    deletes: 200
+   custom:
+    - insert: 'insert({"type": "Custom Load Test", "randString": random_text, "created": r.expr(datetime.now()), "concurrency": 1}, conflict="update")'
+    - select: 'limit(10)'
+    - delete: 'limit(2).delete()'
+    - update: 'limit(2).update({"type": "Custom LTU"})'
