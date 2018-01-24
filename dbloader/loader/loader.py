@@ -224,7 +224,7 @@ class Loader(object):
         if not self.ready:
             self.create_if_not_exists(self.conn, self.custom)
         for run in range(1, self.itterations):
-            inserted = gevent.spawn(self.insert_some(self.custom))
+            inserted = gevent.spawn(self.insert_some, self.custom)
             deleted = gevent.spawn(self.delete_some)
             updated = gevent.spawn(self.update_some)
             selected = gevent.spawn(self.select_some)
