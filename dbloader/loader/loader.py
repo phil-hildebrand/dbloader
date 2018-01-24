@@ -33,6 +33,7 @@ class Loader(object):
         self.host = 'localhost'
         self.port = 3306
         self.ready = False
+        self.custom = None
 
     def big_string(self, chars):
         '''
@@ -53,7 +54,7 @@ class Loader(object):
             return False
         return(self.conn)
 
-    def create_if_not_exists(self, conn):
+    def create_if_not_exists(self, conn, custom=None):
         '''
         If the databases or tables do not exist, create them
         '''
@@ -79,7 +80,7 @@ class Loader(object):
         return True
 
 
-    def insert(self, database, table):
+    def insert(self, database, table, custom=None):
         '''
         Insert a record
         '''
@@ -133,21 +134,21 @@ class Loader(object):
             return False
         return (time.time() - start_time)
 
-    def insert_some(self):
+    def insert_some(self, custom=None):
         '''
         Load data into a table/collection/bucket
         '''
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
             for table in self.tables:
                 for ins in range(self.inserts):
-                    results.append(pool.spawn(self.insert, database, table))
+                    results.append(pool.spawn(self.insert, database, table, custom))
         pool.join()
         inserted = [r.get() for r in results]
         return (inserted)
@@ -159,7 +160,7 @@ class Loader(object):
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
@@ -178,7 +179,7 @@ class Loader(object):
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
@@ -197,7 +198,7 @@ class Loader(object):
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
@@ -221,9 +222,9 @@ class Loader(object):
         logger.debug('Running full Load test')
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         for run in range(1, self.itterations):
-            inserted = gevent.spawn(self.insert_some)
+            inserted = gevent.spawn(self.insert_some(self.custom))
             deleted = gevent.spawn(self.delete_some)
             updated = gevent.spawn(self.update_some)
             selected = gevent.spawn(self.select_some)

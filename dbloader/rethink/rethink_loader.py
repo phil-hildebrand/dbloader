@@ -34,7 +34,7 @@ class RethinkLoader(l.Loader):
             return False
         return(self.conn)
 
-    def create_if_not_exists(self, conn):
+    def create_if_not_exists(self, conn, custom=None):
         '''
         If the databases or tables do not exist, create them
         '''
@@ -42,6 +42,9 @@ class RethinkLoader(l.Loader):
             self.conn = self.get_connection()
 
         try:
+            if self.custom is not None:
+                self.databases.append(self.custom[0]['database'])
+                self.tables.append(self.custom[0]['table'])
             for database in self.databases:
                 for table in self.tables:
                     dblist = r.db_list().run(self.conn)
@@ -63,7 +66,7 @@ class RethinkLoader(l.Loader):
 
         return True
 
-    def insert(self, database, table):
+    def insert(self, database, table, custom=None):
         '''
         Insert a single record
         '''
@@ -71,7 +74,19 @@ class RethinkLoader(l.Loader):
         start_time = time.time()
         try:
             random_text = self.big_string(100)
-            result = r.db(database).table(table).insert(
+            if custom is not None:
+                doc = custom[0]['insert']
+                rdoc = json.loads(doc)
+                for key, value in rdoc.items():
+                    if value == "var_random":
+                        rdoc[key] = random_text
+                    if value == "var_created":
+                        rdoc[key] = r.now()
+                database = custom[0]['database']
+                table = custom[0]['table']
+                result = r.db(database).table(table).insert(rdoc, conflict="update").run(self.conn) 
+            else:
+                result = r.db(database).table(table).insert(
                 {"type": "Load Test",
                  "randString": random_text,
                  "created": start_time,

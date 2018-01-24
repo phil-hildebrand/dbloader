@@ -38,7 +38,7 @@ class MongoLoader(l.Loader):
             return False
         return(self.conn)
 
-    def insert(self, database, object):
+    def insert(self, database, object, custom=None):
         '''
         Insert a single record
         '''

@@ -51,6 +51,7 @@ class TestDBLoader():
             if dbtype == 'rethink':
                 ldr = dbl.rl.RethinkLoader()
                 ldr.host = node
+                ldr.custom = server['custom']
                 ldr.port = port
                 ldr.databases = ['rt_db_1', 'rt_db_2']
                 ldr.tables = ['ltbl_1', 'ltbl_2']
