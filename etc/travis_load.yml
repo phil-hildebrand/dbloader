@@ -6,16 +6,20 @@ server:
    user: none
    pass: none
    concurrency: 10
-   inserts: 100
+   inserts: 50
+   selects: 20
    deletes: 10
+   updates: 10
  - name: 127.0.0.1
    type: rethink
    port: 28015
    user: none
    pass: none
    concurrency: 10
-   inserts: 100
+   inserts: 50
+   selects: 20
    deletes: 10
+   updates: 10
    custom:
     - insert: >
               {"collectedAt": "var_created", "contentHash":  "var_random" , "importSource":  "loader",
@@ -26,16 +30,18 @@ server:
       database: beacon
       table: reviews
       ctype: insert
-    - select: limit(10)
+    - select: 
+      limit: 50
       database: beacon
       table: reviews
       ctype: select
-    - delete: limit(2).delete()
+    - delete: 
+      limit: 2
       database: beacon
       table: reviews
       ctype: delete
-    - update: 'limit(2).update({"type": "Custom LTU"})'
+    - update: {"type": "Custom LTU", "collectedAt": "var_created"}
+      limit: 2
       database: beacon
       table: reviews
       ctype: update
-
