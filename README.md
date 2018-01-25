@@ -32,22 +32,22 @@ $ python setup.py install
 ## _Usage_
 
 ```
-usage: dbloader.py [-h] [-c CONFIG] [-l LOG] [-s SERVER] [-t {mongo,mysql}]
-                   [-P PORT] [-u USER] [-p PASSWD] [-v]
+usage: dbloader.py [-h] [-c CONFIG] [-l LOG] [-s SERVER]
+                   [-t {mongo,mysql,rethink}] [-P PORT] [-u USER] [-p PASSWD]
+                   [-v]
 
 Check dbloader arguments
 
 optional arguments:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
-                        Dbloader config file (default = ./etc/load.yml)
-  -l LOG, --log LOG     Dbloader Log file (default = ./dbloader.log)
+                        Dbloader config (default=./etc/load.yml)
+  -l LOG, --log LOG     Dbloader Log (default=./dbloader.log)
   -s SERVER, --server SERVER
-                        Database Server / URL (default = localhost)
-  -t {mongo,mysql}, --type {mongo,mysql}
-                        Database Server Type [mongo|mysql] (default = mongo)
-  -P PORT, --port PORT  Database port (defaults to 3306 for MySQL, 27017 for
-                        mongo)
+                        Database Server / URL (default=localhost)
+  -t {mongo,mysql,rethink}, --type {mongo,mysql,rethink}
+                        Database Type [mongo|mysql|rethink] (default=mongo)
+  -P PORT, --port PORT  Database port (default=3306/27017/29015)
   -u USER, --user USER  Database user if necessary
   -p PASSWD, --passwd PASSWD
                         Database password if necessary

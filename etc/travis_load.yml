@@ -6,13 +6,42 @@ server:
    user: none
    pass: none
    concurrency: 10
-   inserts: 100
+   inserts: 50
+   selects: 20
    deletes: 10
+   updates: 10
  - name: 127.0.0.1
    type: rethink
    port: 28015
    user: none
    pass: none
    concurrency: 10
-   inserts: 100
+   inserts: 50
+   selects: 20
    deletes: 10
+   updates: 10
+   custom:
+    - insert: >
+              {"collectedAt": "var_created", "contentHash":  "var_random" , "importSource":  "loader",
+               "locationId":  "5d808100-f171-11e6-a502-9ddd243b9f97" , "rating": 1,
+               "review": "Not once was our room cleaned during the two nights we stayed here, the wifi didnt work, there was no breakfast, we heard everything through the thin walls of our room, and the mattresses were dirty. But other than than it was great :)" ,
+               "reviewId":  "var_random", "source":  "google" , "sourceUrl": "https://maps.google.com/maps?cid=411059227829111713", "timelessHash":  "var_random",
+               "ts": "var_created", "userId":  "10373591" , "username":  "Sam Kirkman" }
+      database: beacon
+      table: reviews
+      ctype: insert
+    - select: 
+      limit: 50
+      database: beacon
+      table: reviews
+      ctype: select
+    - delete: 
+      limit: 2
+      database: beacon
+      table: reviews
+      ctype: delete
+    - update: {"type": "Custom LTU", "collectedAt": "var_created"}
+      limit: 2
+      database: beacon
+      table: reviews
+      ctype: update

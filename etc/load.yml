@@ -1,5 +1,5 @@
 ---
-server: 
+server:
  - name: daltstrethinkdb01
    type: rethink
    port: 29015
@@ -8,3 +8,25 @@ server:
    concurrency: 4
    inserts: 250
    deletes: 200
+   custom:
+    - insert: >
+              {"collectedAt": "var_created", "contentHash":  "var_random" , "importSource":  "loader", 
+               "locationId":  "5d808100-f171-11e6-a502-9ddd243b9f97" , "rating": 1,
+               "review": "Not once was our room cleaned during the two nights we stayed here, the wifi didnt work, there was no breakfast, we heard everything through the thin walls of our room, and the mattresses were dirty. But other than than it was great :)" , 
+               "reviewId":  "var_random", "source":  "google" , "sourceUrl": "https://maps.google.com/maps?cid=411059227829111713", "timelessHash":  "var_random", 
+               "ts": "var_created", "userId":  "10373591" , "username":  "Sam Kirkman" }
+      database: beacon
+      table: reviews
+      type: insert
+    - select: limit(10)
+      database: beacon
+      table: reviews
+      type: select
+    - delete: limit(2).delete()
+      database: beacon
+      table: reviews
+      type: delete
+    - update: 'limit(2).update({"type": "Custom LTU"})'
+      database: beacon
+      table: reviews
+      type: update

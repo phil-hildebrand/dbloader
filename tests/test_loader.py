@@ -7,6 +7,7 @@ import logging
 from context import dbloader as dbl
 import pytest
 
+logger = logging.getLogger(__name__)
 
 class TestDBLoader():
 
@@ -28,10 +29,10 @@ class TestDBLoader():
                 ldr.port = port
                 ldr.databases = ['mongo_db_1', 'mongo_db_2']
                 ldr.tables = ['ltbl_1', 'ltbl_2']
-                ldr.inserts = 50
-                ldr.deletes = 5
-                ldr.updates = 5
-                ldr.selects = 5
+                ldr.inserts = server.get('inserts', 50)
+                ldr.deletes = server.get('deletes', 5)
+                ldr.updates = server.get('updates', 5)
+                ldr.selects = server.get('selects', 5)
                 ldr.concurrency = 10
                 ldr.itterations = 2
                 dbl.main(dbtype, ldr)
@@ -51,13 +52,15 @@ class TestDBLoader():
             if dbtype == 'rethink':
                 ldr = dbl.rl.RethinkLoader()
                 ldr.host = node
-                ldr.port = port
+                ldr.custom = server['custom']
+                ldr.port = server['port']
                 ldr.databases = ['rt_db_1', 'rt_db_2']
                 ldr.tables = ['ltbl_1', 'ltbl_2']
-                ldr.inserts = 50
-                ldr.deletes = 5
-                ldr.updates = 5
-                ldr.selects = 5
+                ldr.inserts = server.get('inserts', 50)
+                ldr.deletes = server.get('deletes', 5)
+                ldr.updates = server.get('updates', 5)
+                ldr.selects = server.get('selects', 5)
                 ldr.concurrency = 5
                 ldr.itterations = 2
                 dbl.main(dbtype, ldr)
+

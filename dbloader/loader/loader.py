@@ -33,6 +33,7 @@ class Loader(object):
         self.host = 'localhost'
         self.port = 3306
         self.ready = False
+        self.custom = None
 
     def big_string(self, chars):
         '''
@@ -51,9 +52,9 @@ class Loader(object):
         except Exception:
             logger.exception('Unable to connect to database')
             return False
-        return(self.conn)
+        return self.conn
 
-    def create_if_not_exists(self, conn):
+    def create_if_not_exists(self, conn, custom=None):
         '''
         If the databases or tables do not exist, create them
         '''
@@ -79,7 +80,7 @@ class Loader(object):
         return True
 
 
-    def insert(self, database, table):
+    def insert(self, database, table, custom=None):
         '''
         Insert a record
         '''
@@ -91,9 +92,9 @@ class Loader(object):
         except Exception:
             logger.exception('Unable to insert a record')
             return False
-        return (time.time() - start_time)
+        return time.time() - start_time
 
-    def delete(self, database, table):
+    def delete(self, database, table, custom=None):
         '''
         Delete a record
         '''
@@ -104,9 +105,9 @@ class Loader(object):
         except Exception:
             logger.exception('Unable to delete a record')
             return False
-        return (time.time() - start_time)
+        return time.time() - start_time
 
-    def update(self, database, table):
+    def update(self, database, table, custom=None):
         '''
         update a record
         '''
@@ -117,9 +118,9 @@ class Loader(object):
         except Exception:
             logger.exception('Unable to update a record')
             return False
-        return (time.time() - start_time)
+        return time.time() - start_time
 
-    def select(self, database, table):
+    def select(self, database, table, custom=None):
         '''
         select a record
         '''
@@ -131,83 +132,87 @@ class Loader(object):
         except Exception:
             logger.exception('Unable to select a record')
             return False
-        return (time.time() - start_time)
+        return time.time() - start_time
 
-    def insert_some(self):
+    def insert_some(self, custom=None):
         '''
         Load data into a table/collection/bucket
         '''
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
             for table in self.tables:
                 for ins in range(self.inserts):
-                    results.append(pool.spawn(self.insert, database, table))
+                    results.append(pool.spawn(self.insert, database, table, custom))
         pool.join()
         inserted = [r.get() for r in results]
-        return (inserted)
+        return inserted
 
-    def delete_some(self):
+    def delete_some(self, custom=None):
         '''
         Delete a subset of data from a table/collection/bucket
         '''
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
             for table in self.tables:
                 for delete in range(self.deletes):
-                    results.append(pool.spawn(self.delete, database, table))
+                    results.append(pool.spawn(self.delete, database, table, custom))
         pool.join()
         deleted = [r.get() for r in results]
-        return (deleted)
+        return deleted
 
-    def update_some(self):
+    def update_some(self, custom=None):
         '''
         Update a subset of data from a table/collection/bucket
         '''
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
             for table in self.tables:
                 for delete in range(self.updates):
-                    results.append(pool.spawn(self.update, database, table))
+                    results.append(pool.spawn(self.update, database, table, custom))
         pool.join()
         updated = [r.get() for r in results]
-        return (updated)
+        return updated
 
-    def select_some(self):
+    def select_some(self, custom=None):
         '''
         Select a subset of data from a table/collection/bucket
         '''
 
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         results = []
+        if self.custom is not None:
+            for crud in custom:
+                if crud['ctype'] == 'select':
+                    logger.exception('Custom Selects')
 
         pool = Pool(self.concurrency)
         for database in self.databases:
             for table in self.tables:
-                for delete in range(self.selects):
-                    results.append(pool.spawn(self.select, database, table))
+                for select in range(self.selects):
+                    results.append(pool.spawn(self.select, database, table, custom))
         pool.join()
         selected = [r.get() for r in results]
-        return (selected)
+        return selected
 
     def load_run(self):
         '''
@@ -221,12 +226,12 @@ class Loader(object):
         logger.debug('Running full Load test')
         self.conn = self.get_connection(self.host, self.port)
         if not self.ready:
-            self.create_if_not_exists(self.conn)
+            self.create_if_not_exists(self.conn, self.custom)
         for run in range(1, self.itterations):
-            inserted = gevent.spawn(self.insert_some)
-            deleted = gevent.spawn(self.delete_some)
-            updated = gevent.spawn(self.update_some)
-            selected = gevent.spawn(self.select_some)
+            inserted = gevent.spawn(self.insert_some, self.custom)
+            deleted = gevent.spawn(self.delete_some, self.custom)
+            updated = gevent.spawn(self.update_some, self.custom)
+            selected = gevent.spawn(self.select_some, self.custom)
             gevent.wait(timeout=5)
             total_inserted += inserted.get()
             total_deleted += deleted.get()

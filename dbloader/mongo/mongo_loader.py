@@ -36,9 +36,9 @@ class MongoLoader(l.Loader):
         except Exception:
             logger.exception('Unable to connect to database')
             return False
-        return(self.conn)
+        return self.conn
 
-    def insert(self, database, object):
+    def insert(self, database, object, custom=None):
         '''
         Insert a single record
         '''
@@ -55,9 +55,9 @@ class MongoLoader(l.Loader):
         except Exception:
             logger.exception('Unable to insert a record')
             return False
-        return (time.time() - start_time)
+        return time.time() - start_time
 
-    def delete(self, database, object):
+    def delete(self, database, object, custom=None):
         '''
         Delete a single record
         '''
@@ -69,4 +69,4 @@ class MongoLoader(l.Loader):
         except Exception:
             logger.exception('Unable to delete a record')
             raise Exception
-        return (time.time() - start_time)
+        return time.time() - start_time
