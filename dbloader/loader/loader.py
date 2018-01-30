@@ -25,6 +25,7 @@ class Loader(object):
         self.databases = ['dbl_1', 'dbl_2', 'dbl_3']
         self.tables = ['ltc1', 'ltc2', 'ltc3']
 
+        self.itterations = 1
         self.concurrency = 20
         self.inserts = 100
         self.deletes = 100
@@ -200,10 +201,6 @@ class Loader(object):
         if not self.ready:
             self.create_if_not_exists(self.conn, self.custom)
         results = []
-        if self.custom is not None:
-            for crud in custom:
-                if crud['ctype'] == 'select':
-                    logger.exception('Custom Selects')
 
         pool = Pool(self.concurrency)
         for database in self.databases:

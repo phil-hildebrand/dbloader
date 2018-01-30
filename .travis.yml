@@ -32,8 +32,14 @@ before_script:
 script:
   - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
   - sudo service mongod restart
-  - sudo apt-get install -y --force-yes rethinkdb
+  - sudo apt-get install -y --force-yes rethinkdb=2.2*
   - sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf
   - sudo service rethinkdb restart
+  - pip install 'rethinkdb<2.3'
+  - python setup.py install
+  - pytest --capture=no tests
+  - sudo apt-get install -y --force-yes rethinkdb
+  - sudo service rethinkdb restart
+  - pip install 'rethinkdb~=2.3'
   - python setup.py install
   - pytest --capture=no tests
