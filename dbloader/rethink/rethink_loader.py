@@ -8,7 +8,6 @@ import rethinkdb as r
 import time
 import loader.loader as l
 import logging
-from multiprocessing import Pool
 
 logger = logging.getLogger(__name__)
 
