@@ -1,16 +1,17 @@
 ---
 server:
- - name: 127.0.0.1
-   type: mongo
-   port: 27017
-   user: none
-   pass: none
-   concurrency: 10
-   inserts: 50
-   selects: 20
-   deletes: 10
-   updates: 10
- - name: 127.0.0.1
+# - name: 127.0.0.1
+#   type: mongo
+#   port: 27017
+#   user: none
+#   pass: none
+#   concurrency: 10
+#   inserts: 50
+#   selects: 20
+#   deletes: 10
+#   updates: 10
+# - name: 127.0.0.1
+ - name: daltstlocalrtdb04
    type: rethink
    port: 28015
    user: none
@@ -23,15 +24,15 @@ server:
    custom:
     - insert: >
               {"collectedAt": "var_created", "contentHash":  "var_random" , "importSource":  "loader",
-               "locationId":  "5d808100-f171-11e6-a502-9ddd243b9f97" , "rating": 1,
-               "review": "Not once was our room cleaned during the two nights we stayed here, the wifi didnt work, there was no breakfast, we heard everything through the thin walls of our room, and the mattresses were dirty. But other than than it was great :)" ,
+               "locationId":  "832ec6a0-4d51-11e7-bcc1-11312293ab63" , "rating": 1,
+               "review": "Working at Moz is so awesome!  We always have crazy fun troubleshooting to do, and there is never a lack of new database systems to experiment with and learn.  You never have to worry about being bored or unchallenged here!",
                "reviewId":  "var_random", "source":  "google" , "sourceUrl": "https://maps.google.com/maps?cid=411059227829111713", "timelessHash":  "var_random",
                "ts": "var_created", "userId":  "10373591" , "username":  "Sam Kirkman" }
       database: beacon
       table: reviews
       ctype: insert
     - select: 
-      limit: 50
+      limit: 10
       database: beacon
       table: reviews
       ctype: select
