@@ -1,17 +1,16 @@
 ---
 server:
-# - name: 127.0.0.1
-#   type: mongo
-#   port: 27017
-#   user: none
-#   pass: none
-#   concurrency: 10
-#   inserts: 50
-#   selects: 20
-#   deletes: 10
-#   updates: 10
-# - name: 127.0.0.1
- - name: daltstlocalrtdb04
+ - name: 127.0.0.1
+   type: mongo
+   port: 27017
+   user: none
+   pass: none
+   concurrency: 10
+   inserts: 50
+   selects: 20
+   deletes: 10
+   updates: 10
+ - name: 127.0.0.1
    type: rethink
    port: 28015
    user: none
