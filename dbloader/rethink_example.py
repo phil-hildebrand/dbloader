@@ -32,6 +32,6 @@ for server in options['server']:
         ldr.deletes = server.get('deletes', 5)
         ldr.updates = server.get('updates', 5)
         ldr.selects = server.get('selects', 5)
-        ldr.concurrency = 5
-        ldr.itterations = 2
+        ldr.concurrency =  server.get('concurrency', 5)
+        ldr.itterations = server.get('itterations', 5)
         dbl.main(dbtype, ldr)

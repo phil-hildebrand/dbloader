@@ -73,6 +73,8 @@ class RethinkLoader(l.Loader):
             self.ready = True
             if self.version <= '2.3':
                 conn.close()
+                if self.conn:
+                    self.conn.close()
 
         except Exception:
             logger.exception('Unable check and or setup databases/tables')
@@ -115,6 +117,8 @@ class RethinkLoader(l.Loader):
                 conflict="update").run(conn)
             if self.version <= '2.3':
                 conn.close()
+                if self.conn:
+                    self.conn.close()
 
         except Exception:
             logger.exception('Unable to insert a record')
@@ -141,10 +145,13 @@ class RethinkLoader(l.Loader):
                 result = r.db(database).table(table).limit(1).delete().run(conn)
             if self.version <= '2.3':
                 conn.close()
+                if self.conn:
+                    self.conn.close()
 
         except Exception:
             logger.exception('Unable to delete a record')
-            raise Exception
+            return False
+            # raise Exception
         return time.time() - start_time
 
     def update(self, database, table, custom=None):
@@ -176,10 +183,13 @@ class RethinkLoader(l.Loader):
                 result = r.db(database).table(table).limit(1).update({'type': 'LTU'}).run(conn)
             if self.version <= '2.3':
                 conn.close()
+                if self.conn:
+                    self.conn.close()
 
         except Exception:
             logger.exception('Unable to update a record')
-            raise Exception
+            return False
+            # raise Exception
         return time.time() - start_time
 
     def select(self, database, table, custom=None):
@@ -204,8 +214,11 @@ class RethinkLoader(l.Loader):
                 result = r.db(database).table(table).limit(1).run(conn)
             if self.version <= '2.3':
                 conn.close()
+                if self.conn:
+                    self.conn.close()
 
         except Exception:
             logger.exception('Unable to select a record')
-            raise Exception
+            return False
+            # raise Exception
         return time.time() - start_time
