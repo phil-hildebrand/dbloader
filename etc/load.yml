@@ -5,11 +5,11 @@ server:
    port: 28015
    user: none
    pass: none
-   concurrency: 10
+   concurrency: 24
    inserts: 50
-   selects: 20
-   deletes: 10
-   updates: 10
+   selects: 50
+   deletes: 25
+   updates: 25
    custom:
     - insert: >
               {"collectedAt": "var_created", "contentHash":  "var_random" , "importSource":  "loader",

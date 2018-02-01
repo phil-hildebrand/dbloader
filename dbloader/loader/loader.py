@@ -123,12 +123,17 @@ class Loader(object):
 
     def select(self, database, table, custom=None):
         '''
-        select a record
+        select a set of records and add them to an array
+         to simulate getting all the results.
         '''
+        results = []
 
         start_time = time.time()
         try:
             result = 'select data'
+            for record in result:
+                results.append(record)
+            results = []
 
         except Exception:
             logger.exception('Unable to select a record')
