@@ -229,7 +229,7 @@ class Loader(object):
             deleted = gevent.spawn(self.delete_some, self.custom)
             updated = gevent.spawn(self.update_some, self.custom)
             selected = gevent.spawn(self.select_some, self.custom)
-            gevent.wait(timeout=5)
+            gevent.wait(timeout=240)
             total_inserted += inserted.get()
             total_deleted += deleted.get()
             total_updated += updated.get()
