@@ -151,7 +151,6 @@ class RethinkLoader(l.Loader):
         except Exception:
             logger.exception('Unable to delete a record')
             return False
-            # raise Exception
         return time.time() - start_time
 
     def update(self, database, table, custom=None):
@@ -189,7 +188,6 @@ class RethinkLoader(l.Loader):
         except Exception:
             logger.exception('Unable to update a record')
             return False
-            # raise Exception
         return time.time() - start_time
 
     def select(self, database, table, custom=None):
@@ -198,6 +196,7 @@ class RethinkLoader(l.Loader):
         '''
 
         start_time = time.time()
+        results = []
         try:
             if self.version <= '2.3':
                 conn = self.get_connection(self.host, self.port)
@@ -210,15 +209,20 @@ class RethinkLoader(l.Loader):
                         database = crud['database']
                         table = crud['table']
                         result = r.db(database).table(table).limit(records).run(conn)
+                        for record in result:
+                            results.append(record)
             else:
                 result = r.db(database).table(table).limit(1).run(conn)
+                for record in result:
+                    results.append(record)
             if self.version <= '2.3':
                 conn.close()
                 if self.conn:
                     self.conn.close()
+            results = []
 
         except Exception:
             logger.exception('Unable to select a record')
+            results = []
             return False
-            # raise Exception
         return time.time() - start_time
