@@ -180,6 +180,4 @@ class Loader(object):
             total_deleted += deleted.get()
             total_updated += updated.get()
             total_selected += selected.get()
-            # close connection after the run is complete
-            self.conn.close()
         return(total_inserted, total_deleted, total_updated, total_selected)
