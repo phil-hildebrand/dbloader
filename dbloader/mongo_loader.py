@@ -1,29 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from gevent import monkey
-monkey.patch_all()
 import json
 import pymongo as m
 import time
-import loader.loader as l
-import logging
-
-logger = logging.getLogger(__name__)
+from . import Loader
+from . import logger
 
 
-class MongoLoader(l.Loader):
+class MongoLoader(Loader):
+    ''' Class for load testing Mongo db. '''
 
     def __init__(self):
         '''
         Initialize a MongoLoader
         '''
-        l.Loader.__init__(self)
+        Loader.__init__(self)
         self.dbtype = 'MongoDB'
         self.test_collections = ['ltc1', 'ltc2', 'ltc3']
         self.db_prefix = 'mongo_load_'
+        self.conn = None
 
-    def get_connection(self, host, port):
+    def get_connection(self):
         '''
         Get a mongo connection
         '''
@@ -36,35 +34,39 @@ class MongoLoader(l.Loader):
         except Exception:
             logger.exception('Unable to connect to database')
             return False
-        return self.conn
+        return
 
-    def insert(self, database, object, custom=None):
+    def insert(self, database, collection, custom=None):
         '''
         Insert a single record
         '''
 
         start_time = time.time()
+        if not self.conn:
+            self.get_connection()
         db = self.conn[database]
         try:
-            random_text = self.big_string(100)
-            result = db[object].insert_one({"type": "Load Test",
-                                            "randString": random_text,
-                                            "created": start_time,
-                                            "concurrency": 1})
+            random_text = Loader.big_string(100)
+            result = db[collection].insert_one({"type": "Load Test",
+                                                "randString": random_text,
+                                                "created": start_time,
+                                                "concurrency": 1})
 
         except Exception:
             logger.exception('Unable to insert a record')
             return False
         return time.time() - start_time
 
-    def delete(self, database, object, custom=None):
+    def delete(self, database, collection, custom=None):
         '''
         Delete a single record
         '''
         start_time = time.time()
+        if not self.conn:
+            self.get_connection()
         db = self.conn[database]
         try:
-            result = db[object].delete_one({"randString": {"$exists": "true"}})
+            result = db[collection].delete_one({"randString": {"$exists": "true"}})
 
         except Exception:
             logger.exception('Unable to delete a record')

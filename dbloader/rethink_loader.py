@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from gevent import monkey
-monkey.patch_all()
 import json
 import rethinkdb as r
 import time
-import loader.loader as l
-import logging
-
-logger = logging.getLogger(__name__)
+from . import Loader
+from . import logger
 
 
-class RethinkLoader(l.Loader):
+class RethinkLoader(Loader):
     '''
     A Loader class for load testing rethinkdb databases
     '''
@@ -21,40 +17,33 @@ class RethinkLoader(l.Loader):
         '''
         Initialize a RethinkLoader
         '''
-        l.Loader.__init__(self)
+        Loader.__init__(self)
         self.dbtype = 'RethinkDB'
         self.version = r.__version__
 
-    def get_connection(self, host, port):
+    def get_connection(self):
         '''
         Get a rethink connection
         '''
         try:
             if self.version <= '2.3':
-                old_conn = r.connect(self.host, self.port)
-                return(old_conn)
+                self.conn = r.connect(self.host, self.port)
             else:
                 r.set_loop_type('gevent')
                 self.conn = r.connect(self.host, self.port)
+            return
+        except Exception as e:
+            logger.exception('Unable to connect to database %s' % e)
+            raise
 
-        except Exception:
-            logger.exception('Unable to connect to database')
-            return False
-        return self.conn
-
-    def create_if_not_exists(self, conn, custom=None):
+    def create_if_not_exists(self, custom=None):
         '''
         If the databases or tables do not exist, create them
         '''
-        if self.version <= '2.3':
-            conn = self.get_connection(self.host, self.port)
-        else:
-            if self.conn is None:
-                self.conn = self.get_connection(self.host, self.port)
-            conn = self.conn
-
+        if not self.conn:
+            self.get_connection()
         try:
-            if self.custom is not None:
+            if custom is not None:
                 for crud in custom:
                     self.databases.append(crud['database'])
                     self.tables.append(crud['table'])
@@ -62,22 +51,18 @@ class RethinkLoader(l.Loader):
                 for table in self.tables:
                     dblist = r.db_list().run(self.conn)
                     if database not in dblist:
-                        r.db_create(database).run(conn)
-                        tablist = r.db(database).table_list().run(conn)
+                        r.db_create(database).run(self.conn)
+                        tablist = r.db(database).table_list().run(self.conn)
                         if table not in tablist:
-                            r.db(database).table_create(table).run(conn)
+                            r.db(database).table_create(table).run(self.conn)
                     else:
-                        tablist = r.db(database).table_list().run(conn)
+                        tablist = r.db(database).table_list().run(self.conn)
                         if table not in tablist:
-                            r.db(database).table_create(table).run(conn)
+                            r.db(database).table_create(table).run(self.conn)
             self.ready = True
-            if self.version <= '2.3':
-                conn.close()
-                if self.conn:
-                    self.conn.close()
 
-        except Exception:
-            logger.exception('Unable check and or setup databases/tables')
+        except Exception as e:
+            logger.exception('Unable check and or setup databases/tables: %s' % e)
             self.ready = False
             exit(2)
 
@@ -90,11 +75,9 @@ class RethinkLoader(l.Loader):
 
         start_time = time.time()
         try:
-            if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
-            else:
-                conn = self.conn
-            random_text = self.big_string(100)
+            if not self.conn:
+                self.get_connection()
+            random_text = Loader.big_string(100)
             if custom is not None:
                 for crud in custom:
                     if crud['ctype'] == 'insert':
@@ -107,21 +90,17 @@ class RethinkLoader(l.Loader):
                                 rdoc[key] = r.now()
                         database = crud['database']
                         table = crud['table']
-                        result = r.db(database).table(table).insert(rdoc, conflict="update").run(conn) 
+                        result = r.db(database).table(table).insert(rdoc, conflict="update").run(self.conn)
             else:
                 result = r.db(database).table(table).insert(
-                {"type": "Load Test",
-                 "randString": random_text,
-                 "created": start_time,
-                 "concurrency": 1},
-                conflict="update").run(conn)
-            if self.version <= '2.3':
-                conn.close()
-                if self.conn:
-                    self.conn.close()
+                    {"type": "Load Test",
+                     "randString": random_text,
+                     "created": start_time,
+                     "concurrency": 1},
+                    conflict="update").run(self.conn)
 
-        except Exception:
-            logger.exception('Unable to insert a record')
+        except Exception as e:
+            logger.exception('Unable to insert a record: %s' % e)
             return False
         return time.time() - start_time
 
@@ -132,24 +111,18 @@ class RethinkLoader(l.Loader):
 
         start_time = time.time()
         try:
-            if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
-            else:
-                conn = self.conn
+            if not self.conn:
+                self.get_connection()
             if custom is not None:
                 for crud in custom:
                     if crud['ctype'] == 'delete':
                         records = crud['limit']
-                        result = r.db(database).table(table).limit(records).delete().run(conn)
+                        result = r.db(database).table(table).limit(records).delete().run(self.conn)
             else:
-                result = r.db(database).table(table).limit(1).delete().run(conn)
-            if self.version <= '2.3':
-                conn.close()
-                if self.conn:
-                    self.conn.close()
+                result = r.db(database).table(table).limit(1).delete().run(self.conn)
 
-        except Exception:
-            logger.exception('Unable to delete a record')
+        except Exception as e:
+            logger.exception('Unable to delete a record %s ' % e)
             return False
         return time.time() - start_time
 
@@ -160,15 +133,13 @@ class RethinkLoader(l.Loader):
 
         start_time = time.time()
         try:
-            if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
-            else:
-                conn = self.conn
+            if not self.conn:
+                self.get_connection()
             if custom is not None:
                 for crud in custom:
                     if crud['ctype'] == 'update':
                         doc = crud['update']
-                        random_text = self.big_string(100)
+                        random_text = Loader.big_string(100)
                         for key, value in doc.items():
                             if value == "var_random":
                                 doc[key] = random_text
@@ -177,16 +148,12 @@ class RethinkLoader(l.Loader):
                         records = crud['limit']
                         database = crud['database']
                         table = crud['table']
-                        result = r.db(database).table(table).limit(records).update(doc).run(conn)
+                        result = r.db(database).table(table).limit(records).update(doc).run(self.conn)
             else:
-                result = r.db(database).table(table).limit(1).update({'type': 'LTU'}).run(conn)
-            if self.version <= '2.3':
-                conn.close()
-                if self.conn:
-                    self.conn.close()
+                result = r.db(database).table(table).limit(1).update({'type': 'LTU'}).run(self.conn)
 
-        except Exception:
-            logger.exception('Unable to update a record')
+        except Exception as e:
+            logger.exception('Unable to update a record %s' % e)
             return False
         return time.time() - start_time
 
@@ -198,31 +165,25 @@ class RethinkLoader(l.Loader):
         start_time = time.time()
         results = []
         try:
-            if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
-            else:
-                conn = self.conn
+            if not self.conn:
+                self.get_connection()
             if custom is not None:
                 for crud in custom:
                     if crud['ctype'] == 'select':
                         records = crud['limit']
                         database = crud['database']
                         table = crud['table']
-                        result = r.db(database).table(table).limit(records).run(conn)
+                        result = r.db(database).table(table).limit(records).run(self.conn)
                         for record in result:
                             results.append(record)
             else:
-                result = r.db(database).table(table).limit(1).run(conn)
+                result = r.db(database).table(table).limit(1).run(self.conn)
                 for record in result:
                     results.append(record)
-            if self.version <= '2.3':
-                conn.close()
-                if self.conn:
-                    self.conn.close()
             results = []
 
-        except Exception:
-            logger.exception('Unable to select a record')
+        except Exception as e:
+            logger.exception('Unable to select a record %s' % e)
             results = []
             return False
         return time.time() - start_time

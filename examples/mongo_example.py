@@ -1,4 +1,4 @@
-import dbloader as dbl
+from dbloader import dbloader as dbl
 import time
 
 dbl.setup_logs('./dbloader.log', True)
