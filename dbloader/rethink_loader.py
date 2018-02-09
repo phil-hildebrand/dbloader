@@ -43,10 +43,10 @@ class RethinkLoader(Loader):
         If the databases or tables do not exist, create them
         '''
         if self.version <= '2.3':
-            conn = self.get_connection(self.host, self.port)
+            conn = self.get_connection()
         else:
             if self.conn is None:
-                self.conn = self.get_connection(self.host, self.port)
+                self.conn = self.get_connection()
             conn = self.conn
         try:
             if custom is not None:
@@ -86,7 +86,7 @@ class RethinkLoader(Loader):
         start_time = time.time()
         try:
             if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
+                conn = self.get_connection()
             else:
                 conn = self.conn
             random_text = Loader.big_string(100)
@@ -128,7 +128,7 @@ class RethinkLoader(Loader):
         start_time = time.time()
         try:
             if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
+                conn = self.get_connection()
             else:
                 conn = self.conn
             if custom is not None:
@@ -156,7 +156,7 @@ class RethinkLoader(Loader):
         start_time = time.time()
         try:
             if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
+                conn = self.get_connection()
             else:
                 conn = self.conn
             if custom is not None:
@@ -194,7 +194,7 @@ class RethinkLoader(Loader):
         results = []
         try:
             if self.version <= '2.3':
-                conn = self.get_connection(self.host, self.port)
+                conn = self.get_connection()
             else:
                 conn = self.conn
             if custom is not None:
