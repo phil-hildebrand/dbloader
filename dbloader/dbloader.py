@@ -2,9 +2,10 @@
 import sys
 import argparse
 import logging
-import loader.loader
-import mongo.mongo_loader as ml
-import rethink.rethink_loader as rl
+from . import Loader
+from . import logger
+import mongo_loader as ml
+import rethink_loader as rl
 import os
 import yaml
 
@@ -16,19 +17,13 @@ import yaml
 def setup_logs(logfile, verbose):
     ''' Setup general logging '''
 
-    global logger
-    logger = logging.getLogger(__name__)
-
     log = logging.FileHandler(logfile)
     console = logging.StreamHandler()
-
+    logger.addHandler(console)
+    logger.addHandler(log)
+    logger.setLevel(logging.INFO)
     if verbose:
         logger.setLevel(logging.DEBUG)
-        logger.addHandler(console)
-        logger.addHandler(log)
-    else:
-        logger.setLevel(logging.INFO)
-        logger.addHandler(log)
 
 
 def verify_file(filename):
@@ -67,28 +62,28 @@ def main(dbtype, ldr):
         logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
     load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
 
-    if len(load_duration) == 0:
+    if not load_duration:
         logger.warning('0 load runs recorded')
     else:
         logger.warning('%d load runs in %4.3f seconds with avg run of %4.2f',
                        len(load_duration),
                        sum(load_duration),
                        len(load_duration) / sum(load_duration))
-    if len(delete_duration) == 0:
+    if not delete_duration:
         logger.warning('0 delete runs recorded')
     else:
         logger.warning('%d delete runs in %4.3f seconds with avg run of %4.2f',
                        len(delete_duration),
                        sum(delete_duration),
                        len(delete_duration) / sum(delete_duration))
-    if len(update_duration) == 0:
+    if not update_duration:
         logger.warning('0 update runs recorded')
     else:
         logger.warning('%d update runs in %4.3f seconds with avg run of %4.2f',
                        len(update_duration),
                        sum(update_duration),
                        len(update_duration) / sum(update_duration))
-    if len(select_duration) == 0:
+    if not select_duration:
         logger.warning('0 select runs recorded')
     else:
         logger.warning('%d select runs in %4.3f seconds with avg run of %4.2f',

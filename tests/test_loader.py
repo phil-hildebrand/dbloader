@@ -4,7 +4,7 @@ import json
 import os
 import sys
 import logging
-from context import dbloader as dbl
+from dbloader import dbloader as dbl
 import pytest
 
 logger = logging.getLogger(__name__)
