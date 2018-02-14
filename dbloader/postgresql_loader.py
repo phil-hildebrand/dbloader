@@ -133,7 +133,6 @@ class PostgresLoader(Loader):
                         table = crud['table']
                         db_conn = self.get_connection(database)
                         sql = 'insert into %s (%s) values ( %s );' % (table, columns, values)
-                        logger.info("Inserting in table: %s" % table)
                         with db_conn.cursor() as cursor:
                             cursor.execute("SET ROLE %s;" % self.role)
                             cursor.execute(sql)
@@ -144,7 +143,6 @@ class PostgresLoader(Loader):
                 ran_json = '{"name": "%s", "data": "%s"}' % (random_txt, random_json_string_data)
                 sql = "insert into %s (name, cool_json) values ('%s', '%s');" % (tablename, random_txt, ran_json)
                 db_conn = self.get_connection(dbname)
-                logger.info("Inserting in table: %s" % tablename)
                 with db_conn.cursor() as cursor:
                     cursor.execute("SET ROLE %s;" % self.role)
                     cursor.execute(sql)
@@ -166,7 +164,6 @@ class PostgresLoader(Loader):
                         limit = crud['limit']
                         db_conn = self.get_connection(db)
                         sql = "delete from %s where id in (select id from %s LIMIT %d);" % (table, table, limit)
-                        logger.info("Deleting from table: %s" % table)
                         with db_conn.cursor() as cursor:
                             cursor.execute("SET ROLE %s;" % self.role)
                             cursor.execute(sql)
@@ -198,7 +195,6 @@ class PostgresLoader(Loader):
                         columntype = crud['columntype']
                         db_conn = self.get_connection(db)
                         sql = "update %s set %s = cast( '%s' as %s ) where id in (select id from %s LIMIT 1);" % (table, column, update_val, columntype, table)
-                        logger.info("Updating table: %s" % table)
                         with db_conn.cursor() as cursor:
                             cursor.execute("SET ROLE %s;" % self.role)
                             cursor.execute(sql)
@@ -228,7 +224,6 @@ class PostgresLoader(Loader):
                         table = crud['table']
                         db_conn = self.get_connection(database)
                         sql = "select * from %s limit %d;" % (table, limit)
-                        logger.info("selecting from table: %s" % table)
                         with db_conn.cursor() as cursor:
                             cursor.execute("SET ROLE %s;" % self.role)
                             cursor.execute(sql)
@@ -236,7 +231,6 @@ class PostgresLoader(Loader):
             else:
                 sql = "select * from %s LIMIT 1;" % (tablename)
                 db_conn = self.get_connection(dbname)
-                logger.info("selecting from table: %s" % tablename)
                 with db_conn.cursor() as cursor:
                     cursor.execute("SET ROLE %s;" % self.role)
                     cursor.execute(sql)
