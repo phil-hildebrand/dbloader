@@ -35,3 +35,33 @@ server:
       database: beacon
       table: reviews
       ctype: update
+ - name: 127.0.0.1
+   type: postgres
+   port: 5432
+   user: dba
+   pass: dba
+   custom:
+    - insert: {"cool_int": 113, "cool_json": "'{\"name\":\"testdata\"}'"}
+      database: test1
+      table: tabl1
+      table_create_script: "id serial primary key, cool_int int, cool_json json"
+      ctype: insert
+    - select:
+      limit: 10
+      database: test1
+      table: tabl1
+      table_create_script: "id serial primary key, cool_int int, cool_json json"
+      ctype: select
+    - delete:
+      limit: 2
+      database: test1
+      table: tabl1
+      table_create_script: "id serial primary key, cool_int int, cool_json json"
+      ctype: delete
+    - update: 116
+      column: cool_int
+      columntype: integer
+      table_create_script: "id serial primary key, cool_int int, cool_json json"
+      database: test1
+      table: tabl1
+      ctype: update

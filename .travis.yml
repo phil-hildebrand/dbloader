@@ -25,13 +25,21 @@ before_script:
   - echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
   - echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
   - . /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
+  - . /etc/lsb-release && echo "deb http://apt.postgresql.org/pub/repos/apt/ $DISTRIB_CODENAME-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
   - wget -qO- https://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
+  - wget --quiet -O - https://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | apt-key add -
   - sudo apt-get update
 
 # command to build and run tests
 script:
   - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
   - sudo service mongod restart
+  - sudo apt-get -y install "postgresql-10" "postgresql-contrib-10"
+  - sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/$PG_VERSION/main/postgresql.conf
+  - echo "host    all             all             all                     md5" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
+  - echo "client_encoding = utf8" >> /etc/postgresql/$PG_VERSION/main/postgresql.conf
+  - sudo service postgresql restart
+  - psql -c "CREATE ROLE DBA WITH SUPERUSER LOGIN PASSWORD 'dba';" -U postgres
   - sudo apt-get install -y --force-yes rethinkdb=2.2*
   - sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf
   - sudo service rethinkdb restart

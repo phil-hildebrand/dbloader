@@ -64,3 +64,22 @@ class TestDBLoader():
                 ldr.itterations = 2
                 dbl.main(dbtype, ldr)
 
+    def testPostgresLoader(self):
+        '''We should be able to do a postgres load run'''
+        dbl.setup_logs('./dbloader.log', True)
+        options = dbl.load_config('./etc/travis_load.yml')
+        if not options:
+            fail
+        for server in options['server']:
+            if server['type'] == 'postgres':
+                ldr = dbl.pg.PostgresLoader(server['name'], server['port'], server['user'], server['pass'], 'postgres')
+                ldr.databases = ['pg_db_1', 'pg_db_2']
+                ldr.tables = ['tbl_1', 'tbl_2']
+                ldr.custom = server['custom']
+                ldr.inserts = server.get('inserts', 50)
+                ldr.deletes = server.get('deletes', 5)
+                ldr.updates = server.get('updates', 5)
+                ldr.selects = server.get('selects', 5)
+                ldr.concurrency =  server.get('concurrency', 5)
+                ldr.itterations = server.get('itterations', 5)
+                dbl.main(server['type'], ldr)
