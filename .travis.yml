@@ -34,10 +34,13 @@ before_script:
 script:
   - sudo apt-get install -y --force-yes mongodb-org=$MONGO_TEST
   - sudo service mongod restart
-  - sudo apt-get -y install "postgresql-10" "postgresql-contrib-10"
+  - sudo service postgresql stop
+  - sudo apt-get remove -q 'postgresql-*'
+  - sudo apt-get update -q
+  - sudo apt-get -y install --force-yes "postgresql-10" "postgresql-contrib-10"
   - sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/10/main/postgresql.conf
-  - echo "host    all             all             all                     md5" >> /etc/postgresql/10/main/pg_hba.conf
-  - echo "client_encoding = utf8" >> /etc/postgresql/10/main/postgresql.conf
+  - sudo echo "host    all             all             all                     md5" >> /etc/postgresql/10/main/pg_hba.conf
+  - sudo echo "client_encoding = utf8" >> /etc/postgresql/10/main/postgresql.conf
   - sudo service postgresql restart
   - psql -c "CREATE ROLE DBA WITH SUPERUSER LOGIN PASSWORD 'dba';" -U postgres
   - sudo apt-get install -y --force-yes rethinkdb=2.2*
