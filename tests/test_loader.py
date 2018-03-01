@@ -7,12 +7,20 @@ import logging
 from dbloader import dbloader as dbl
 import pytest
 
+version = "{}".format(os.getenv('VERSION'))
+postgres = "{}".format(os.getenv('POSTGRES_TEST'))
+mongo = "{}".format(os.getenv('MONGO_TEST'))
+rethink = "{}".format(os.getenv('RETHINK_TEST'))
+
 logger = logging.getLogger(__name__)
 
 class TestDBLoader():
 
+    @pytest.mark.skipif(not mongo), reason="Not running Mongo")
     def testMongoLoader(self):
         '''We should be able to do a mongo load run'''
+        if not postgres:
+            fail
         dbl.setup_logs('./dbloader.log', True)
         options = dbl.load_config('./etc/travis_load.yml')
         if not options:
@@ -37,6 +45,7 @@ class TestDBLoader():
                 ldr.itterations = 2
                 dbl.main(dbtype, ldr)
 
+    @pytest.mark.skipif(not rethink), reason="Not running Rethink")
     def testRethinkLoader(self):
         '''We should be able to do a rethink load run'''
         dbl.setup_logs('./dbloader.log', True)
@@ -64,6 +73,7 @@ class TestDBLoader():
                 ldr.itterations = 2
                 dbl.main(dbtype, ldr)
 
+    @pytest.mark.skipif(not rethink), reason="Not running Postgres")
     def testPostgresLoader(self):
         '''We should be able to do a postgres load run'''
         dbl.setup_logs('./dbloader.log', True)
