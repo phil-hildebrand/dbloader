@@ -19,8 +19,6 @@ class TestDBLoader():
     @pytest.mark.skipif((not mongo), reason="Not running Mongo")
     def testMongoLoader(self):
         '''We should be able to do a mongo load run'''
-        if not postgres:
-            fail
         dbl.setup_logs('./dbloader.log', True)
         options = dbl.load_config('./etc/travis_load.yml')
         if not options:
