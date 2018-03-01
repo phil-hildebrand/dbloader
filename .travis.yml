@@ -26,40 +26,40 @@ before_script:
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
   - if [ ${MONGO_TEST} = "true" ]; then
-    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
-    echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
-    echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list;
+    echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list;
+    echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list;
     fi
   - if [ ${POSTGRES_TEST} = "true" ]; then
-    . /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
-    wget -qO- https://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
+    . /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list;
+    wget -qO- https://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -;
     fi
   - if [ ${RETHINKDB_TEST} = "true" ]; then
-    . /etc/lsb-release && echo "deb http://apt.postgresql.org/pub/repos/apt/ $DISTRIB_CODENAME-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-    wget --quiet -O - https://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
+    . /etc/lsb-release && echo "deb http://apt.postgresql.org/pub/repos/apt/ $DISTRIB_CODENAME-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list;
+    wget --quiet -O - https://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -;
     fi
   - sudo apt-get update
 
 # command to build and run tests
 script:
   - if [ ${MONGO_TEST} = "true" ]; then
-    sudo apt-get install -y --force-yes mongodb-org=$VERSION
-    sudo service mongod restart
+    sudo apt-get install -y --force-yes mongodb-org=$VERSION;
+    sudo service mongod restart;
     fi
   - if [ ${POSTGRES_TEST} = "true" ]; then
-    sudo service postgresql stop
-    sudo apt-get remove -q 'postgresql-*'
-    sudo apt-get update -q
-    sudo apt-get -y install --force-yes "postgresql-${VERSION}" "postgresql-contrib-${VERSION}"
-    sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
-    sudo service postgresql restart
-    psql -c "CREATE ROLE DBA WITH SUPERUSER LOGIN PASSWORD 'dba';" -U postgres
+    sudo service postgresql stop;
+    sudo apt-get remove -q 'postgresql-*';
+    sudo apt-get update -q;
+    sudo apt-get -y install --force-yes "postgresql-${VERSION}" "postgresql-contrib-${VERSION}";
+    sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf;
+    sudo service postgresql restart;
+    psql -c "CREATE ROLE DBA WITH SUPERUSER LOGIN PASSWORD 'dba';" -U postgres;
     fi
   - if [ ${RETHINKDB_TEST} = "true" ]; then
-    sudo apt-get install -y --force-yes rethinkdb=${VERSION}*
-    sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf
-    sudo service rethinkdb restart
-    pip install 'rethinkdb~=${VERSION}'
+    sudo apt-get install -y --force-yes rethinkdb=${VERSION}*;
+    sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf;
+    sudo service rethinkdb restart;
+    pip install 'rethinkdb~=${VERSION}';
     fi
   - python setup.py install
   - pytest --capture=no tests
