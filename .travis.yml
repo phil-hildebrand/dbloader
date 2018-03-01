@@ -59,7 +59,7 @@ script:
     sudo apt-get install -y --force-yes rethinkdb=${VERSION}*;
     sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf;
     sudo service rethinkdb restart;
-    pip install 'rethinkdb~=${VERSION}';
+    pip install "rethinkdb~=${VERSION}";
     fi
   - python setup.py install
   - pytest --capture=no tests
