@@ -8,9 +8,9 @@ from dbloader import dbloader as dbl
 import pytest
 
 version = "{}".format(os.getenv('VERSION'))
-postgres = "{}".format(os.getenv('POSTGRES_TEST'))
-mongo = "{}".format(os.getenv('MONGO_TEST'))
-rethink = "{}".format(os.getenv('RETHINK_TEST'))
+postgres = os.getenv('POSTGRES_TEST')
+mongo = os.getenv('MONGO_TEST')
+rethink = os.getenv('RETHINK_TEST')
 
 logger = logging.getLogger(__name__)
 
