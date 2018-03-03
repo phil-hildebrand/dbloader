@@ -6,6 +6,7 @@ from . import Loader
 from . import logger
 import mongo_loader as ml
 import rethink_loader as rl
+import postgresql_loader as pg
 import os
 import yaml
 
@@ -48,7 +49,7 @@ def load_config(config):
     return False
 
 
-def main(dbtype, ldr):
+def main(dbtype, ldr, custom=None):
     ''' Main program '''
 
     logger.warning('Starting DB Load Tests')
@@ -60,7 +61,10 @@ def main(dbtype, ldr):
     if dbtype == 'rethink':
         logger.warning('Loading Rethink')
         logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
-    load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
+    if dbtype == 'postgres':
+        logger.warning('Loading PostgreSQL')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    load_duration, delete_duration, update_duration, select_duration = ldr.load_run(custom)
 
     if not load_duration:
         logger.warning('0 load runs recorded')
@@ -152,6 +156,11 @@ if __name__ == "__main__":
         ldr = rl.rethinkLoader()
         ldr.host = args.server
         ldr.port = args.port
+        ldr.concurrency = args.concurrency
+        logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
+        load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
+    if args.type == 'postgres':
+        ldr = pg.PostgresLoader(args.server, args.port, args.user, args.passwd, 'postgres')
         ldr.concurrency = args.concurrency
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
         load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
