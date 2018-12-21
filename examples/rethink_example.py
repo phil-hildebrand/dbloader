@@ -33,4 +33,5 @@ for server in options['server']:
         ldr.selects = server.get('selects', 5)
         ldr.concurrency =  server.get('concurrency', 5)
         ldr.itterations = server.get('itterations', 5)
-        dbl.main(dbtype, ldr)
+        custom = server.get('custom', None)
+        dbl.main(server['type'], ldr, custom)
