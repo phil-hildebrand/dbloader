@@ -4,4 +4,5 @@ pymysql>=0.8.0
 pyyaml>=3.12
 pytest
 rethinkdb~=2.3
+riak
 psycopg2

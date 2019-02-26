@@ -11,6 +11,7 @@ version = "{}".format(os.getenv('VERSION'))
 postgres = os.getenv('POSTGRES_TEST')
 mongo = os.getenv('MONGO_TEST')
 rethink = os.getenv('RETHINK_TEST')
+riak = os.getenv('RIAK_TEST')
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,27 @@ class TestDBLoader():
                 ldr = dbl.pg.PostgresLoader(server['name'], server['port'], server['user'], server['pass'], 'postgres')
                 ldr.databases = ['pg_db_1', 'pg_db_2']
                 ldr.tables = ['tbl_1', 'tbl_2']
+                ldr.custom = server['custom']
+                ldr.inserts = server.get('inserts', 50)
+                ldr.deletes = server.get('deletes', 5)
+                ldr.updates = server.get('updates', 5)
+                ldr.selects = server.get('selects', 5)
+                ldr.concurrency =  server.get('concurrency', 5)
+                ldr.itterations = server.get('itterations', 5)
+                dbl.main(server['type'], ldr)
+
+    @pytest.mark.skipif((not riak), reason="Not running Riak")
+    def testRiakLoader(self):
+        '''We should be able to do a riak load run'''
+        dbl.setup_logs('./dbloader.log', True)
+        options = dbl.load_config('./etc/travis_load.yml')
+        if not options:
+            fail
+        for server in options['server']:
+            if server['type'] == 'riak':
+                ldr = dbl.pg.RiakLoader(server['name'], server['port'], server['user'], server['pass'], 'riak')
+                ldr.databases = ['riak_bucket_1', 'riak_bucket_2']
+                ldr.tables = ['doc_1', 'doc_2']
                 ldr.custom = server['custom']
                 ldr.inserts = server.get('inserts', 50)
                 ldr.deletes = server.get('deletes', 5)

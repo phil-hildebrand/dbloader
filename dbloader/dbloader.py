@@ -7,6 +7,7 @@ from . import logger
 import mongo_loader as ml
 import rethink_loader as rl
 import postgresql_loader as pg
+import riak_loader as r
 import os
 import yaml
 
@@ -64,6 +65,9 @@ def main(dbtype, ldr, custom=None):
     if dbtype == 'postgres':
         logger.warning('Loading PostgreSQL')
         logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    if dbtype == 'riak':
+        logger.warning('Loading Riak')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
     load_duration, delete_duration, update_duration, select_duration = ldr.load_run(custom)
 
     if not load_duration:
@@ -110,10 +114,10 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--server', default='localhost',
                         help='Database Server / URL (default=localhost)')
     parser.add_argument('-t', '--type', default='mongo',
-                        choices=['mongo', 'mysql', 'rethink'],
-                        help='Database Type [mongo|mysql|rethink] (default=mongo)')
+                        choices=['mongo', 'mysql', 'rethink', 'riak'],
+                        help='Database Type [mongo|mysql|rethink|riak] (default=mongo)')
     parser.add_argument('-P', '--port', default=3306,
-                        help='Database port (default=3306/27017/29015)')
+                        help='Database port (default=3306/27017/29015/8098)')
     parser.add_argument('-u', '--user',
                         help='Database user if necessary')
     parser.add_argument('-p', '--passwd',
@@ -161,6 +165,11 @@ if __name__ == "__main__":
         load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
     if args.type == 'postgres':
         ldr = pg.PostgresLoader(args.server, args.port, args.user, args.passwd, 'postgres')
+        ldr.concurrency = args.concurrency
+        logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
+        load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
+    if args.type == 'riak':
+        ldr = r.RiakLoader(args.server, args.port, args.user, args.passwd, 'riak')
         ldr.concurrency = args.concurrency
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
         load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
