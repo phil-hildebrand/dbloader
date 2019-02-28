@@ -102,10 +102,11 @@ class TestDBLoader():
             fail
         for server in options['server']:
             if server['type'] == 'riak':
-                ldr = dbl.r.RiakLoader(protocol=server['protocol'],
-                                       host=server['name'],
-                                       port=server['port'])
+                ldr = dbl.r.RiakLoader()
                 ldr.databases = ['riak_bucket_1', 'riak_bucket_2']
+                ldr.protocol = server.get('protocol', 'http')
+                ldr.host = server.get('host', '127.0.0.1')
+                ldr.port = server.get('port', 8098)
                 ldr.inserts = server.get('inserts', 50)
                 ldr.deletes = server.get('deletes', 5)
                 ldr.updates = server.get('updates', 5)
