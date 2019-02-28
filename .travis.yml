@@ -21,6 +21,7 @@ env:
   - POSTGRES_TEST=true VERSION=10 CI_NODE_INDEX=5
   - RETHINKDB_TEST=true VERSION=2.2 CI_NODE_INDEX=6
   - RETHINKDB_TEST=true VERSION=2.3 CI_NODE_INDEX=7
+  - RIAK_TEST=true VERSION=2.2 CI_NODE_INDEX=6
 
 before_script:
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
@@ -61,6 +62,13 @@ script:
     sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf;
     sudo service rethinkdb restart;
     pip install "rethinkdb~=${VERSION}";
+    fi
+  - if [ ${RIAK_TEST} = "true" ]; then
+    curl https://packagecloud.io/gpg.key | sudo apt-key add -
+    sudo apt-get install -y apt-transport-https
+    curl "https://packagecloud.io/install/repositories/basho/riak/config_file.list?os=ubuntu&dist=trusty&name=dbloader" | sudo tee /etc/apt/sources.list.d/basho.list
+    sudo apt-get update
+    sudo apt-get install riak
     fi
   - python setup.py install
   - pytest --capture=no tests

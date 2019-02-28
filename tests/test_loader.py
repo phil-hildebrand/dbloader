@@ -102,10 +102,10 @@ class TestDBLoader():
             fail
         for server in options['server']:
             if server['type'] == 'riak':
-                ldr = dbl.pg.RiakLoader(server['name'], server['port'], server['user'], server['pass'], 'riak')
+                ldr = dbl.r.RiakLoader(protocol=server['protocol'],
+                                       host=server['name'],
+                                       port=server['port'])
                 ldr.databases = ['riak_bucket_1', 'riak_bucket_2']
-                ldr.tables = ['doc_1', 'doc_2']
-                ldr.custom = server['custom']
                 ldr.inserts = server.get('inserts', 50)
                 ldr.deletes = server.get('deletes', 5)
                 ldr.updates = server.get('updates', 5)
