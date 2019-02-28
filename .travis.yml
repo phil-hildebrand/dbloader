@@ -63,7 +63,7 @@ script:
     pip install "rethinkdb~=${VERSION}";
     fi
   - if [ ${RIAK_TEST} = "true" ]; then
-    curl https://packagecloud.io/gpg.key | sudo apt-key add -;
+    curl -L https://packagecloud.io/basho/riak/gpgkey | sudo apt-key add -;
     sudo apt-get install -y apt-transport-https;
     curl "https://packagecloud.io/install/repositories/basho/riak/config_file.list?os=ubuntu&dist=trusty&name=dbloader" | sudo tee /etc/apt/sources.list.d/basho.list;
     sudo apt-get update;
