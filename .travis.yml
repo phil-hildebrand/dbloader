@@ -69,6 +69,7 @@ script:
     sudo apt-get update;
     sudo apt-get install riak;
     sudo service riak start;
+    sleep 5
     fi
   - python setup.py install
   - pytest --capture=no tests
