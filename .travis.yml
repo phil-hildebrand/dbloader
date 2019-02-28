@@ -68,6 +68,7 @@ script:
     curl "https://packagecloud.io/install/repositories/basho/riak/config_file.list?os=ubuntu&dist=trusty&name=dbloader" | sudo tee /etc/apt/sources.list.d/basho.list;
     sudo apt-get update;
     sudo apt-get install riak;
+    sudo service riak start;
     fi
   - python setup.py install
   - pytest --capture=no tests
