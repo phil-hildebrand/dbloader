@@ -5,4 +5,4 @@ pyyaml>=3.12
 pytest
 rethinkdb~=2.3
 riak
-psycopg2
+psycopg2-binary
