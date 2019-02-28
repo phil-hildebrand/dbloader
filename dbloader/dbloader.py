@@ -122,12 +122,18 @@ if __name__ == "__main__":
                         help='Database user if necessary')
     parser.add_argument('-p', '--passwd',
                         help='Database password if necessary')
+    parser.add_argument('--protocol', default='http',
+                        help='Riak Protocol [http|protobuf] (default=http)')
     parser.add_argument('-v', '--verbose',
                         action='store_true', help='Debug Mode')
     args = parser.parse_args()
 
     setup_logs(args.log, args.verbose)
     logger.warning('Starting DB Load Tests')
+    args.inserts = 250
+    args.deletes = 250
+    args.updates = 250
+    args.selects = 250
     if args.config:
         options = load_config(args.config)
         if options:
@@ -138,39 +144,56 @@ if __name__ == "__main__":
             args.user = options['server'][0]['user']
             args.concurrency = options['server'][0]['concurrency']
             args.passwd = options['server'][0]['pass']
+            if options['server'][0]['protocol']:
+                args.protocol = options['server'][0]['protocol']
             if options['server'][0]['inserts']:
-                ml.inserts = options['server'][0]['inserts']
+                args.inserts = options['server'][0]['inserts']
             if options['server'][0]['deletes']:
-                ml.deletes = options['server'][0]['deletes']
+                args.deletes = options['server'][0]['deletes']
+            if options['server'][0]['updates']:
+                args.updates= options['server'][0]['updates']
+            if options['server'][0]['selects']:
+                args.selects= options['server'][0]['selects']
         else:
             logger.error('Unable to load config file')
     else:
         logger.warning('Config file %s not found, using defaults',
                        args.config)
-        ml.inserts = 250
-        ml.deletes = 250
 
     if args.type == 'mongo':
-        ml.host = args.server
-        ml.port = args.port
-        ml.concurrency = args.concurrency
+        ldr = ml.rethinkLoader()
+        ldr.concurrency = args.concurrency
+        ldr.inserts = args.inserts
+        ldr.inserts = args.deletes
+        ldr.inserts = args.updates
+        ldr.inserts = args.selects
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
-        ml.load_run()
+        ldr.load_run()
     if args.type == 'rethink':
         ldr = rl.rethinkLoader()
-        ldr.host = args.server
-        ldr.port = args.port
         ldr.concurrency = args.concurrency
+        ldr.inserts = args.inserts
+        ldr.inserts = args.deletes
+        ldr.inserts = args.updates
+        ldr.inserts = args.selects
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
         load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
     if args.type == 'postgres':
         ldr = pg.PostgresLoader(args.server, args.port, args.user, args.passwd, 'postgres')
         ldr.concurrency = args.concurrency
+        ldr.inserts = args.inserts
+        ldr.inserts = args.deletes
+        ldr.inserts = args.updates
+        ldr.inserts = args.selects
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
         load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
     if args.type == 'riak':
-        ldr = r.RiakLoader(args.server, args.port, args.user, args.passwd, 'riak')
+        ldr = r.RiakLoader(args.protocol, args.server, args.port)
         ldr.concurrency = args.concurrency
+        ldr.inserts = args.inserts
+        ldr.inserts = args.deletes
+        ldr.inserts = args.updates
+        ldr.inserts = args.selects
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
         load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
     logger.warning('%d load runs in %4.2f time with avg run of %4.2f',

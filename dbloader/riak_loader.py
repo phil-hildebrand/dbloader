@@ -20,7 +20,7 @@ class RiakLoader(Loader):
         '''
         Loader.__init__(self)
         self.dbtype = 'Riak'
-        self.buckets = ['rb_1', 'rb_2', 'rb_3']
+        self.databases = ['rb_1', 'rb_2', 'rb_3']
         self.db_prefix = 'riak_load_'
         self.conn = None
 
@@ -38,7 +38,7 @@ class RiakLoader(Loader):
             return False
         return
 
-    def insert(self, bucket, bkey=None, custom=None):
+    def insert(self, bucket, table=None, custom=None):
         '''
         Insert a single key/value
         '''
@@ -66,7 +66,7 @@ class RiakLoader(Loader):
         logger.debug(' - Saved! (%s)', stored.data)
         return time.time() - start_time
 
-    def update(self, bucket, bkey=None, custom=None):
+    def update(self, bucket, table=None, custom=None):
         '''
         Update a single key/value
         '''
@@ -91,7 +91,7 @@ class RiakLoader(Loader):
             return False
         return time.time() - start_time
 
-    def delete(self, bucket, bkey, custom=None):
+    def delete(self, bucket, table, custom=None):
         '''
         Delete a single object
         '''
@@ -107,7 +107,7 @@ class RiakLoader(Loader):
             raise Exception
         return time.time() - start_time
 
-    def select(self, bucket, bkey, custom=None):
+    def select(self, bucket, table=None, custom=None):
         '''
         Select a single object
         '''
@@ -134,7 +134,7 @@ class RiakLoader(Loader):
         results = []
 
         pool = Pool(self.concurrency)
-        for bucket in self.buckets:
+        for bucket in self.databases:
                 for ins in range(self.inserts):
                     results.append(pool.spawn(self.insert, bucket, None, ins))
         pool.join()

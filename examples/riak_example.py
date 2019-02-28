@@ -12,7 +12,7 @@ ldr.updates = 2
 ldr.selects = 2
 ldr.concurrency = 5
 ldr.itterations = 5
-ldr.buckets = ['rb_1', 'rb_2']
+ldr.databases = ['rb_1', 'rb_2']
 inserted = ldr.insert_some()
 deleted = ldr.delete_some()
 dbl.logger.info("Inserted %d records in %4.3f sec for an avg insert time of %4.2f" % (len(inserted),
