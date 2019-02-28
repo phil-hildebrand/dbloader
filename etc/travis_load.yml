@@ -78,6 +78,7 @@ server:
  - name: 127.0.0.1
    type: riak
    port: 8098
+   protocol: http
    user: none
    pass: none
    concurrency: 10
