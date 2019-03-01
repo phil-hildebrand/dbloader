@@ -75,3 +75,14 @@ server:
       database: test1
       table: tabl1
       ctype: update
+ - name: 127.0.0.1
+   type: riak
+   port: 8098
+   protocol: http
+   user: none
+   pass: none
+   concurrency: 10
+   inserts: 50
+   selects: 20
+   deletes: 10
+   updates: 10

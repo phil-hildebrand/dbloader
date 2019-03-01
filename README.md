@@ -6,6 +6,7 @@ Basic load test tool for databases
 - MongoDB
 - RethinkDB
 - PostgreSQL
+- Riak
 
 ![](https://travis-ci.org/phil-hildebrand/dbloader.svg?branch=master)
 
@@ -60,40 +61,15 @@ Dbloader can also be configured to load custom data into the database. For provi
 _Please refer to etc/load.yml for sample custom configs._
 
 ### Custom options
-- ctype[insert | select | delete | update]: Type of crud operation.
-- database: Database name for the crud operation. A new db will be created if it doesn't exist.
-- table: Table name where the crud is to be performed. A new table will be created if it doesn't exist.
+- ctype [insert | select | delete | update]: Type of crud operation.
+- database: Database/Bucket name for the crud operation. A new db will be created if it doesn't exist.
+- table: Table/Collection name where the crud is to be performed. A new table/collection will be created if it doesn't exist.
 - table_create_script: Description of table with column names, size and types. Will be used to create new table if table does not exist. Required in case of sql databases.
 - limit: Number of records to be fetched/updated/deleted.
 - column/ columntype: Name and type of column to be updated. Required in sql databases for update operations.
 - insert: data to be inserted into the table. Required in case of insert operations. Data should be given in json format. For sql databases `columnname: columnvalue` format should be used.
 - update: Value to be updated.
 
-
-# Usage
-
-```
-usage: dbloader.py [-h] [-c CONFIG] [-l LOG] [-s SERVER]
-                   [-t {mongo,mysql,rethink}] [-P PORT] [-u USER] [-p PASSWD]
-                   [-v]
-
-Check dbloader arguments
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -c CONFIG, --config CONFIG
-                        Dbloader config (default=./etc/load.yml)
-  -l LOG, --log LOG     Dbloader Log (default=./dbloader.log)
-  -s SERVER, --server SERVER
-                        Database Server / URL (default=localhost)
-  -t {mongo,mysql,rethink}, --type {mongo,mysql,rethink}
-                        Database Type [mongo|mysql|rethink] (default=mongo)
-  -P PORT, --port PORT  Database port (default=3306/27017/29015)
-  -u USER, --user USER  Database user if necessary
-  -p PASSWD, --passwd PASSWD
-                        Database password if necessary
-  -v, --verbose         Debug Mode
-```
 ## Examples
 
 Please refer to examples directory for sample usage for different databases.

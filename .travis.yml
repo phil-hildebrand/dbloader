@@ -2,7 +2,6 @@ dist: trusty
 language: python
 sudo: required
 python:
-  - "2.7"
   - "3.6"
 # command to install dependencies
 install:
@@ -21,10 +20,12 @@ env:
   - POSTGRES_TEST=true VERSION=10 CI_NODE_INDEX=5
   - RETHINKDB_TEST=true VERSION=2.2 CI_NODE_INDEX=6
   - RETHINKDB_TEST=true VERSION=2.3 CI_NODE_INDEX=7
+  - RIAK_TEST=true VERSION=2.2 CI_NODE_INDEX=6
 
 before_script:
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 6B05F25D762E3157  
   - if [ ${MONGO_TEST} = "true" ]; then
     echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list;
     echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list;
@@ -37,6 +38,11 @@ before_script:
   - if [ ${RETHINKDB_TEST} = "true" ]; then
     . /etc/lsb-release && echo "deb http://apt.postgresql.org/pub/repos/apt/ $DISTRIB_CODENAME-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list;
     wget --quiet -O - https://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -;
+    fi
+  - if [ ${RIAK_TEST} = "true" ]; then
+    curl -L https://packagecloud.io/basho/riak/gpgkey | sudo apt-key add -;
+    sudo apt-get install -y apt-transport-https;
+    curl "https://packagecloud.io/install/repositories/basho/riak/config_file.list?os=ubuntu&dist=trusty&name=dbloader" | sudo tee /etc/apt/sources.list.d/basho.list;
     fi
   - sudo apt-get update
 
@@ -60,6 +66,11 @@ script:
     sudo sed "s/^#\(.*bind.*\)/bind=all/" /etc/rethinkdb/default.conf.sample | sudo tee /etc/rethinkdb/instances.d/instance1.conf;
     sudo service rethinkdb restart;
     pip install "rethinkdb~=${VERSION}";
+    fi
+  - if [ ${RIAK_TEST} = "true" ]; then
+    sudo apt-get install -y --force-yes riak;
+    sudo service riak start;
+    sudo riak-admin wait-for-service riak_kv;
     fi
   - python setup.py install
   - pytest --capture=no tests

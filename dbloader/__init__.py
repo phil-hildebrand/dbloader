@@ -130,7 +130,7 @@ class Loader(object):
         pool = Pool(self.concurrency)
         for database in self.databases:
             for table in self.tables:
-                for delete in range(self.updates):
+                for update in range(self.updates):
                     results.append(pool.spawn(self.update, database, table, custom))
         pool.join()
         updated = [r.get() for r in results]
