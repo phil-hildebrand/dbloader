@@ -14,14 +14,16 @@ from . import logger
 class RiakLoader(Loader):
     ''' Class for load testing Riak. '''
 
-    def __init__(self):
+    def __init__(self, protocol, host, port): 
         '''
         Initialize a RiakLoader
         '''
         Loader.__init__(self)
         self.dbtype = 'Riak'
         self.databases = ['rb_1', 'rb_2', 'rb_3']
-        self.db_prefix = 'riak_load_'
+        self.protocol = protocol
+        self.host = host
+        self.port = port
         self.conn = None
 
     def get_connection(self):
@@ -78,12 +80,8 @@ class RiakLoader(Loader):
             b = self.conn.bucket(bucket)
             kv = b.get(str(custom))
             random_text = self.big_string(self.string_size)
-            value = {"type": "Load Test",
-                     "randString": random_text,
-                     "created": start_time,
-                     "updated": start_time,
-                     "concurrency": 1}
-            kv.data = value
+            kv.data['updated'] = start_time
+            kv.data['randString'] = random_text
             result = kv.store()
 
         except Exception:
@@ -129,8 +127,6 @@ class RiakLoader(Loader):
         '''
         if not self.conn:
             self.get_connection()
-        if not self.ready:
-            self.create_if_not_exists(custom)
         results = []
 
         pool = Pool(self.concurrency)
@@ -153,8 +149,6 @@ class RiakLoader(Loader):
         logger.debug('Running full Load test')
         if not self.conn:
             self.get_connection()
-        if not self.ready:
-            self.create_if_not_exists(custom)
         for run in range(1, self.itterations):
             inserted = gevent.spawn(self.insert_some, self.itterations * self.inserts)
             updated = gevent.spawn(self.update_some, random.randint(1, self.inserts))
