@@ -39,6 +39,11 @@ before_script:
     . /etc/lsb-release && echo "deb http://apt.postgresql.org/pub/repos/apt/ $DISTRIB_CODENAME-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list;
     wget --quiet -O - https://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -;
     fi
+  - if [ ${RIAK_TEST} = "true" ]; then
+    curl -L https://packagecloud.io/basho/riak/gpgkey | sudo apt-key add -;
+    sudo apt-get install -y apt-transport-https;
+    curl "https://packagecloud.io/install/repositories/basho/riak/config_file.list?os=ubuntu&dist=trusty&name=dbloader" | sudo tee /etc/apt/sources.list.d/basho.list;
+    fi
   - sudo apt-get update
 
 # command to build and run tests
@@ -63,13 +68,9 @@ script:
     pip install "rethinkdb~=${VERSION}";
     fi
   - if [ ${RIAK_TEST} = "true" ]; then
-    curl -L https://packagecloud.io/basho/riak/gpgkey | sudo apt-key add -;
-    sudo apt-get install -y apt-transport-https;
-    curl "https://packagecloud.io/install/repositories/basho/riak/config_file.list?os=ubuntu&dist=trusty&name=dbloader" | sudo tee /etc/apt/sources.list.d/basho.list;
-    sudo apt-get update;
-    sudo apt-get install riak;
+    sudo apt-get install -y --force-yes riak;
     sudo service riak start;
-    sleep 5
+    sudo riak-admin wait-for-service riak_kv;
     fi
   - python setup.py install
   - pytest --capture=no tests
