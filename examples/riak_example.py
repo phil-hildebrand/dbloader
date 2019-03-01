@@ -2,17 +2,25 @@ from dbloader import dbloader as dbl
 import time
 
 dbl.setup_logs('./dbloader.log', False)
-ldr = dbl.r.RiakLoader()
-ldr.protocol = 'http'
-ldr.host = '192.168.2.11'
-ldr.port = 8098
-ldr.inserts = 50
-ldr.deletes = 2
-ldr.updates = 2
-ldr.selects = 2
-ldr.concurrency = 5
-ldr.itterations = 5
-ldr.databases = ['rb_1', 'rb_2']
+options = dbl.load_config('./etc/load.yml')
+if not options:
+    exit(1)
+for server in options['server']:
+    if server['type'] == 'riak':
+        ldr = dbl.r.RiakLoader(server['protocol'], server['name'], server['port'])
+        dbl.logger.info(server['protocol'])
+        dbl.logger.info(server['name'])
+        dbl.logger.info(server['port'])
+        #ldr.protocol = 'http'
+        #ldr.host = '192.168.2.11'
+        #ldr.port = 8098
+        ldr.inserts = 50
+        ldr.deletes = 2
+        ldr.updates = 2
+        ldr.selects = 2
+        ldr.concurrency = 5
+        ldr.itterations = 5
+        ldr.databases = ['rb_1', 'rb_2']
 inserted = ldr.insert_some()
 deleted = ldr.delete_some()
 dbl.logger.info("Inserted %d records in %4.3f sec for an avg insert time of %4.2f" % (len(inserted),
