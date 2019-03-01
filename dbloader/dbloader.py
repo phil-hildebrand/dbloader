@@ -168,7 +168,7 @@ if __name__ == "__main__":
         ldr.inserts = args.updates
         ldr.inserts = args.selects
         logger.info('loading: %s:%d (%d)', args.server, args.port, args.concurrency)
-        ldr.load_run()
+        load_duration, delete_duration, update_duration, select_duration = ldr.load_run()
     if args.type == 'rethink':
         ldr = rl.rethinkLoader()
         ldr.concurrency = args.concurrency

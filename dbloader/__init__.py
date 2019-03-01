@@ -25,6 +25,7 @@ class Loader(object):
         self.databases = ['dbl_1', 'dbl_2', 'dbl_3']
         self.tables = ['ltc1', 'ltc2', 'ltc3']
 
+        self.string_size = 100
         self.itterations = 1
         self.concurrency = 20
         self.inserts = 100
@@ -38,12 +39,12 @@ class Loader(object):
         # self.custom = None
 
     @staticmethod
-    def big_string(chars):
+    def big_string(size):
         '''
         Build some random data
         '''
         return ''.join(random.choice(string.ascii_letters)
-                       for _ in range(chars))
+                       for _ in range(size))
 
     def get_connection(self):
         ''' Invoked everytime a new connection is needed. '''

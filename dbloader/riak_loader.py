@@ -51,7 +51,7 @@ class RiakLoader(Loader):
             self.get_connection()
         try:
             b = self.conn.bucket(bucket)
-            random_text = Loader.big_string(100)
+            random_text = self.big_string(self.string_size)
             value = {"type": "Load Test",
                      "randString": random_text,
                      "created": start_time,
@@ -79,7 +79,7 @@ class RiakLoader(Loader):
         try:
             b = self.conn.bucket(bucket)
             kv = b.get(str(custom))
-            random_text = Loader.big_string(100)
+            random_text = self.big_string(self.string_size)
             kv.data['updated'] = start_time
             kv.data['randString'] = random_text
             result = kv.store()
