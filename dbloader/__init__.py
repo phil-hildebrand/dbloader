@@ -39,12 +39,12 @@ class Loader(object):
         # self.custom = None
 
     @staticmethod
-    def big_string(self):
+    def big_string(size):
         '''
         Build some random data
         '''
         return ''.join(random.choice(string.ascii_letters)
-                       for _ in range(self.string_size))
+                       for _ in range(size))
 
     def get_connection(self):
         ''' Invoked everytime a new connection is needed. '''

@@ -138,10 +138,8 @@ class PostgresLoader(Loader):
                             cursor.execute(sql)
                         db_conn.close()
             else:
-                random_txt = self.big_string()
-                self.string_size = self.string_size * 3
-                random_json_string_data = self.big_string()
-                self.string_size = self.string_size / 3
+                random_txt = self.big_string(self.string_size)
+                random_json_string_data = self.big_string(self.string_size * 3)
                 ran_json = '{"name": "%s", "data": "%s"}' % (random_txt, random_json_string_data)
                 sql = "insert into %s (name, cool_json) values ('%s', '%s');" % (tablename, random_txt, ran_json)
                 db_conn = self.get_connection(dbname)
@@ -203,7 +201,7 @@ class PostgresLoader(Loader):
                         db_conn.close()
             else:
                 db_conn = self.get_connection(dbname)
-                rand_text = self.big_string()
+                rand_text = self.big_string(self.string_size)
                 sql = "update %s set name = '%s' where id in (select id from %s LIMIT 1);" % (tablename, rand_text, tablename)
                 with db_conn.cursor() as cursor:
                     cursor.execute("SET ROLE %s;" % self.role)

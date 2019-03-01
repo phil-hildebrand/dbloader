@@ -89,7 +89,7 @@ class RethinkLoader(Loader):
                 conn = self.get_connection()
             else:
                 conn = self.conn
-            random_text = self.big_string()
+            random_text = self.big_string(self.string_size)
             if custom is not None:
                 for crud in custom:
                     if crud['ctype'] == 'insert':
@@ -163,7 +163,7 @@ class RethinkLoader(Loader):
                 for crud in custom:
                     if crud['ctype'] == 'update':
                         doc = crud['update']
-                        random_text = self.big_string()
+                        random_text = self.big_string(self.string_size)
                         for key, value in doc.items():
                             if value == "var_random":
                                 doc[key] = random_text

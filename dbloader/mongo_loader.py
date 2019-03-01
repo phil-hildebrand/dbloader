@@ -46,7 +46,7 @@ class MongoLoader(Loader):
             self.get_connection()
         db = self.conn[database]
         try:
-            random_text = self.big_string()
+            random_text = self.big_string(self.string_size)
             result = db[collection].insert_one({"type": "Load Test",
                                                 "randString": random_text,
                                                 "created": start_time,
