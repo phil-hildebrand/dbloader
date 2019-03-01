@@ -20,7 +20,7 @@ class TestDBLoader():
     @pytest.mark.skipif((not mongo), reason="Not running Mongo")
     def testMongoLoader(self):
         '''We should be able to do a mongo load run'''
-        dbl.setup_logs('./dbloader.log', True)
+        dbl.setup_logs('./dbloader.log', False)
         options = dbl.load_config('./etc/travis_load.yml')
         if not options:
             fail
@@ -47,7 +47,7 @@ class TestDBLoader():
     @pytest.mark.skipif((not rethink), reason="Not running Rethink")
     def testRethinkLoader(self):
         '''We should be able to do a rethink load run'''
-        dbl.setup_logs('./dbloader.log', True)
+        dbl.setup_logs('./dbloader.log', False)
         options = dbl.load_config('./etc/travis_load.yml')
         if not options:
             fail
@@ -75,7 +75,7 @@ class TestDBLoader():
     @pytest.mark.skipif((not rethink), reason="Not running Postgres")
     def testPostgresLoader(self):
         '''We should be able to do a postgres load run'''
-        dbl.setup_logs('./dbloader.log', True)
+        dbl.setup_logs('./dbloader.log', False)
         options = dbl.load_config('./etc/travis_load.yml')
         if not options:
             fail
@@ -96,7 +96,7 @@ class TestDBLoader():
     @pytest.mark.skipif((not riak), reason="Not running Riak")
     def testRiakLoader(self):
         '''We should be able to do a riak load run'''
-        dbl.setup_logs('./dbloader.log', True)
+        dbl.setup_logs('./dbloader.log', False)
         options = dbl.load_config('./etc/travis_load.yml')
         if not options:
             fail
