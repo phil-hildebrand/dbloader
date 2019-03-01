@@ -6,6 +6,7 @@ ldr = dbl.r.RiakLoader()
 ldr.protocol = 'http'
 ldr.host = '192.168.2.11'
 ldr.port = 8098
+ldr.string_size = 250
 ldr.inserts = 50
 ldr.deletes = 2
 ldr.updates = 2
