@@ -64,8 +64,6 @@ class RiakLoader(Loader):
         except Exception:
             logger.exception('Unable to insert an object')
             return False
-        logger.debug(' - Inserted %s (%s)', result.key, kv.data)
-        logger.debug(' - Saved! (%s)', stored.data)
         return time.time() - start_time
 
     def update(self, bucket, table=None, custom=None):
@@ -80,12 +78,13 @@ class RiakLoader(Loader):
             b = self.conn.bucket(bucket)
             kv = b.get(str(custom))
             random_text = self.big_string(self.string_size)
-            kv.data['updated'] = start_time
-            kv.data['randString'] = random_text
-            result = kv.store()
+            if (kv.data):
+                kv.data['updated'] = start_time
+                kv.data['randString'] = random_text
+                result = kv.store()
 
         except Exception:
-            logger.exception('Unable to update an object')
+            logger.exception('Unable to update an object: (Key: %s)', custom)
             return False
         return time.time() - start_time
 
@@ -129,9 +128,14 @@ class RiakLoader(Loader):
             self.get_connection()
         results = []
 
+        if custom == self.inserts:
+            min = 1
+        else:
+            min = custom - self.inserts + 1
+
         pool = Pool(self.concurrency)
         for bucket in self.databases:
-                for ins in range(self.inserts):
+                for ins in range(min, custom):
                     results.append(pool.spawn(self.insert, bucket, None, ins))
         pool.join()
         inserted = [r.get() for r in results]
@@ -150,11 +154,11 @@ class RiakLoader(Loader):
         if not self.conn:
             self.get_connection()
         for run in range(1, self.itterations):
-            inserted = gevent.spawn(self.insert_some, self.itterations * self.inserts)
+            inserted = gevent.spawn(self.insert_some, run * self.inserts)
             updated = gevent.spawn(self.update_some, random.randint(1, self.inserts))
             deleted = gevent.spawn(self.delete_some,
-                                   random.randint((self.itterations * self.inserts) - self.inserts + 1,
-                                   self.itterations * self.inserts))
+                                   random.randint((run * self.inserts) - self.inserts + 1,
+                                   run * self.inserts))
             selected = gevent.spawn(self.select_some, random.randint(1, self.inserts))
             gevent.wait(timeout=240)
             total_inserted += inserted.get()

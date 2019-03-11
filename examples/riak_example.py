@@ -2,7 +2,8 @@ from dbloader import dbloader as dbl
 import time
 
 dbl.setup_logs('./dbloader.log', False)
-options = dbl.load_config('./etc/load.yml')
+# options = dbl.load_config('./etc/load.yml')
+options = dbl.load_config('./riak_load.yml')
 if not options:
     exit(1)
 for server in options['server']:
@@ -11,17 +12,16 @@ for server in options['server']:
         dbl.logger.info(server['protocol'])
         dbl.logger.info(server['name'])
         dbl.logger.info(server['port'])
-        #ldr.protocol = 'http'
-        #ldr.host = '192.168.2.11'
-        #ldr.port = 8098
-        ldr.string_size = 250
-        ldr.inserts = 50
-        ldr.deletes = 2
-        ldr.updates = 2
-        ldr.selects = 2
-        ldr.concurrency = 5
-        ldr.itterations = 5
-        ldr.databases = ['rb_1', 'rb_2']
+        ldr.databases = ['rb_1', 'rb_2', 'rb_3']
+        ldr.string_size = server.get('string_size', 250)
+        ldr.inserts = server.get('inserts', 50)
+        ldr.deletes = server.get('deletes', 5)
+        ldr.updates = server.get('updates', 5)
+        ldr.selects = server.get('selects', 5)
+        ldr.concurrency = server.get('concurrency', 5)
+        ldr.itterations = server.get('itterations', 5)
+        custom = server.get('itterations', None)
+        dbl.main(server['type'], ldr, custom)
 inserted = ldr.insert_some()
 deleted = ldr.delete_some()
 dbl.logger.info("Inserted %d records in %4.3f sec for an avg insert time of %4.2f" % (len(inserted),
