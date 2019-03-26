@@ -60,6 +60,8 @@ class RiakLoader(Loader):
             kv = b.new(key=str(custom), data=value, content_type='application/json')
             result = kv.store()
             stored = b.get(kv.key)
+            if len(stored.siblings) > 1:
+                logger.info('{0} has siblings'.format(kv.key))
 
         except Exception:
             logger.exception('Unable to insert an object')
@@ -77,11 +79,16 @@ class RiakLoader(Loader):
         try:
             b = self.conn.bucket(bucket)
             kv = b.get(str(custom))
-            random_text = self.big_string(self.string_size)
-            if (kv.data):
-                kv.data['updated'] = start_time
-                kv.data['randString'] = random_text
-                result = kv.store()
+            if len(kv.siblings) > 1:
+                logger.info('{0} has siblings: Skipping Update'.format(kv.key))
+                logger.info('siblings: {0}'.format(kv.siblings))
+            else:
+                random_text = self.big_string(self.string_size)
+                logger.info('siblings: {0}'.format(kv.siblings))
+                if (kv.data):
+                    kv.data['updated'] = start_time
+                    kv.data['randString'] = random_text
+                    result = kv.store()
 
         except Exception:
             logger.exception('Unable to update an object: (Key: %s)', custom)
@@ -114,6 +121,8 @@ class RiakLoader(Loader):
         try:
             b = self.conn.bucket(bucket)
             result = b.get(str(custom))
+            if len(result.siblings) > 1:
+                logger.info('{0} has siblings'.format(str(custom)))
 
         except Exception:
             logger.exception('Unable to select key')
