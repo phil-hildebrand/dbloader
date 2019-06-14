@@ -50,9 +50,57 @@ def load_config(config):
     return False
 
 
-#def main(dbtype=None, ldr=None, custom=None):
-def main():
+def main(dbtype, ldr, custom=None):
     ''' Main program '''
+
+    logger.warning('Starting DB Load Tests')
+    load_duration = []
+    delete_duration = []
+    if dbtype == 'mongo':
+        logger.warning('Loading Mongo')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    if dbtype == 'rethink':
+        logger.warning('Loading Rethink')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    if dbtype == 'postgres':
+        logger.warning('Loading PostgreSQL')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    if dbtype == 'riak':
+        logger.warning('Loading Riak')
+        logger.info('loading: %s:%d (%d)', ldr.host, ldr.port, ldr.concurrency)
+    load_duration, delete_duration, update_duration, select_duration = ldr.load_run(custom)
+
+    if not load_duration:
+        logger.warning('0 load runs recorded')
+    else:
+        logger.warning('%d load runs in %4.3f seconds with avg run of %4.2f',
+                       len(load_duration),
+                       sum(load_duration),
+                       len(load_duration) / sum(load_duration))
+    if not delete_duration:
+        logger.warning('0 delete runs recorded')
+    else:
+        logger.warning('%d delete runs in %4.3f seconds with avg run of %4.2f',
+                       len(delete_duration),
+                       sum(delete_duration),
+                       len(delete_duration) / sum(delete_duration))
+    if not update_duration:
+        logger.warning('0 update runs recorded')
+    else:
+        logger.warning('%d update runs in %4.3f seconds with avg run of %4.2f',
+                       len(update_duration),
+                       sum(update_duration),
+                       len(update_duration) / sum(update_duration))
+    if not select_duration:
+        logger.warning('0 select runs recorded')
+    else:
+        logger.warning('%d select runs in %4.3f seconds with avg run of %4.2f',
+                       len(select_duration),
+                       sum(select_duration),
+                       len(select_duration) / sum(select_duration))
+    logger.warning('Completed DB Load Tests')
+
+if __name__ == "__main__":
 
     #
     # Parse command line options
@@ -157,6 +205,3 @@ def main():
                    sum(delete_duration),
                    len(delete_duration) / sum(delete_duration))
     logger.warning('Completed DB Load Tests')
-
-# if __name__ == '__main__':
-main()
