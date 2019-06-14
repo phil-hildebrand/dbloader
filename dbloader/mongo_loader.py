@@ -30,6 +30,7 @@ class MongoLoader(Loader):
                                       self.port,
                                       connectTimeoutMS=2000,
                                       socketTimeoutMS=2000)
+            self.ready = True
 
         except Exception:
             logger.exception('Unable to connect to database')

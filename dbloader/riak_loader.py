@@ -45,17 +45,16 @@ class RiakLoader(Loader):
             return False
         return
 
-    def insert(self, bucket, table=None, custom=None):
+    def insert(self, bucket_name, table=None, custom=None):
         '''
         Insert a single key/value
         '''
 
-        logger.debug(' - Insert key %d', custom)
         start_time = time.time()
         if not self.conn:
             self.get_connection()
         try:
-            b = self.conn.bucket(bucket)
+            b = self.conn.bucket(bucket_name)
             random_text = self.big_string(self.string_size)
             value = {"type": "Load Test",
                      "randString": random_text,
@@ -73,7 +72,7 @@ class RiakLoader(Loader):
             return False
         return time.time() - start_time
 
-    def update(self, bucket, table=None, custom=None):
+    def update(self, bucket_name, table=None, custom=None):
         '''
         Update a single key/value
         '''
@@ -82,7 +81,7 @@ class RiakLoader(Loader):
         if not self.conn:
             self.get_connection()
         try:
-            b = self.conn.bucket(bucket)
+            b = self.conn.bucket(bucket_name)
             kv = b.get(str(custom))
             if len(kv.siblings) > 1:
                 logger.info('{0} has siblings: Skipping Update'.format(kv.key))
@@ -100,31 +99,35 @@ class RiakLoader(Loader):
             return False
         return time.time() - start_time
 
-    def delete(self, bucket, table, custom=None):
+    def delete(self, bucket_name, table, custom=None):
         '''
         Delete a single object
         '''
+
         start_time = time.time()
         if not self.conn:
             self.get_connection()
         try:
-            b = self.conn.bucket(bucket)
-            result = b.delete(str(custom))
+            b = self.conn.bucket(bucket_name)
+            obj = b.get(str(custom))
+            r = obj.delete()
 
-        except Exception:
-            logger.exception('Unable to delete key')
+            logger.debug('Deleted %s from %s', custom, bucket_name)
+
+        except Exception as e:
+            logger.exception('Unable to delete key %s: %s', custom, e)
             raise Exception
         return time.time() - start_time
 
-    def truncate(self, bucket, table=None, custom=None):
+    def truncate(self, bucket_name, table=None, custom=None):
         '''
         Truncate a table/collection/bucket
         '''
-        logger.debug('Truncating %s with %s', bucket, custom)
-        tbucket = self.conn.bucket(bucket)
+        logger.debug('Truncating %s with %s', bucket_name, custom)
+        tbucket = self.conn.bucket(bucket_name)
         keycount = 0
         get_one = 0
-        kfile = self.keyfile + ".{0}".format(bucket)
+        kfile = self.keyfile + ".{0}".format(bucket_name)
         with open(kfile, "w") as myFile:
             try:
                 with closing(self.conn.stream_keys(tbucket, self.timeout)) as keys:
@@ -133,12 +136,21 @@ class RiakLoader(Loader):
                             keycount = keycount + 1
                             myFile.write("%s\n" % key)
             except Exception as e:
-                logger.error("Unknown exception for %s (%s)", bucket, e)
+                logger.error("Unknown exception for %s (%s)", bucket_name, e)
                 pass
 
-        return keycount
+        logger.debug('Found %s keys in %s', keycount, bucket_name)
+        deletes = []
+        tpool = Pool(self.concurrency)
+        with open(kfile, "r") as myFile:
+            for key in myFile:
+                deletes.append(tpool.spawn(self.delete, bucket_name, None, key.strip()))
+        tpool.join()
+        logger.debug('Deleted %s keys from %s', len(deletes), bucket_name)
 
-    def select(self, bucket, table=None, custom=None):
+        return len(deletes)
+
+    def select(self, bucket_name, table=None, custom=None):
         '''
         Select a single object
         '''
@@ -146,7 +158,7 @@ class RiakLoader(Loader):
         if not self.conn:
             self.get_connection()
         try:
-            b = self.conn.bucket(bucket)
+            b = self.conn.bucket(bucket_name)
             result = b.get(str(custom))
             if len(result.siblings) > 1:
                 logger.info('{0} has siblings'.format(str(custom)))
@@ -170,9 +182,11 @@ class RiakLoader(Loader):
             min = max(0, custom - self.inserts + 1)
 
         pool = Pool(self.concurrency)
-        for bucket in self.databases:
+        for bucket_name in self.databases:
                 for ins in range(min, custom):
-                    results.append(pool.spawn(self.insert, bucket, None, ins))
+                    results.append(pool.spawn(self.insert, bucket_name, None, ins))
+                    if (ins % 10) == 0:
+                        logger.debug(' - Inserted %d to %s', ins, bucket_name)
         pool.join()
         inserted = [r.get() for r in results]
         return inserted
