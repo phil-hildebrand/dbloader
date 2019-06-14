@@ -3,6 +3,7 @@
 
 import gevent
 from gevent.pool import Pool
+from contextlib import closing
 import json
 import random
 import riak as r
@@ -14,17 +15,20 @@ from . import logger
 class RiakLoader(Loader):
     ''' Class for load testing Riak. '''
 
-    def __init__(self, protocol, host, port): 
+    def __init__(self, protocol, host='localhost', port=8098): 
         '''
         Initialize a RiakLoader
         '''
-        Loader.__init__(self)
+        super().__init__()
         self.dbtype = 'Riak'
         self.databases = ['rb_1', 'rb_2', 'rb_3']
+        self.tables = []
         self.protocol = protocol
         self.host = host
         self.port = port
         self.conn = None
+        self.timeout = 3600
+        self.keyfile = "/tmp/truncate_keys"
 
     def get_connection(self):
         '''
@@ -34,6 +38,7 @@ class RiakLoader(Loader):
             self.conn = r.RiakClient(protocol=self.protocol,
                                      host=self.host,
                                      port=self.port)
+            self.ready = True
 
         except Exception:
             logger.exception('Unable to connect to Riak')
@@ -111,6 +116,28 @@ class RiakLoader(Loader):
             raise Exception
         return time.time() - start_time
 
+    def truncate(self, bucket, table=None, custom=None):
+        '''
+        Truncate a table/collection/bucket
+        '''
+        logger.debug('Truncating %s with %s', bucket, custom)
+        tbucket = self.conn.bucket(bucket)
+        keycount = 0
+        get_one = 0
+        kfile = self.keyfile + ".{0}".format(bucket)
+        with open(kfile, "w") as myFile:
+            try:
+                with closing(self.conn.stream_keys(tbucket, self.timeout)) as keys:
+                    for key_list in keys:
+                        for key in key_list:
+                            keycount = keycount + 1
+                            myFile.write("%s\n" % key)
+            except Exception as e:
+                logger.error("Unknown exception for %s (%s)", bucket, e)
+                pass
+
+        return keycount
+
     def select(self, bucket, table=None, custom=None):
         '''
         Select a single object
@@ -129,7 +156,7 @@ class RiakLoader(Loader):
             raise Exception
         return time.time() - start_time
 
-    def insert_some(self, custom=None):
+    def insert_some(self, custom=0):
         '''
         Load data into a bucket
         '''
@@ -140,7 +167,7 @@ class RiakLoader(Loader):
         if custom == self.inserts:
             min = 1
         else:
-            min = custom - self.inserts + 1
+            min = max(0, custom - self.inserts + 1)
 
         pool = Pool(self.concurrency)
         for bucket in self.databases:
