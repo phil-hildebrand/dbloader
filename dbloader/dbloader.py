@@ -1,13 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys
 import argparse
 import logging
 from . import Loader
 from . import logger
-import mongo_loader as ml
-import rethink_loader as rl
-import postgresql_loader as pg
-import riak_loader as r
+from . import mongo_loader as ml
+from . import rethink_loader as rl
+from . import postgresql_loader as pg
+from . import riak_loader as r
 import os
 import yaml
 

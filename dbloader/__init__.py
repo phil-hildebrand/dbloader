@@ -15,8 +15,9 @@ logger = logging.getLogger("dbloader")
 
 class Loader(object):
     '''
-    A class for load testing databases
+    A class for loading databases
     '''
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self):
         '''
@@ -24,19 +25,18 @@ class Loader(object):
         '''
         self.databases = ['dbl_1', 'dbl_2', 'dbl_3']
         self.tables = ['ltc1', 'ltc2', 'ltc3']
-
-        self.string_size = 100
-        self.itterations = 1
         self.concurrency = 20
-        self.inserts = 100
-        self.deletes = 100
-        self.updates = 100
-        self.selects = 100
         self.host = 'localhost'
         self.port = 3306
         self.ready = False
         self.conn = None
-        # self.custom = None
+        self.string_size = 100
+        self.itterations = 1
+        self.inserts = 100
+        self.deletes = 100
+        self.updates = 100
+        self.selects = 100
+        logger.debug('Loader initialized')
 
     @staticmethod
     def big_string(size):
@@ -47,37 +47,62 @@ class Loader(object):
                        for _ in range(size))
 
     def get_connection(self):
-        ''' Invoked everytime a new connection is needed. '''
+        '''
+            Invoked everytime a new connection is needed.
+        '''
         self.conn = True
         return
 
     def create_if_not_exists(self, custom=None):
-        ''' Invoked to create databases or tables that do not exist'''
+        '''
+            Invoked to create databases or tables that do not exist
+        '''
+        logger.debug('Creating %s (%s)', self.databases, custom)
         self.ready = True
         return
 
-    def insert(self, database, table, custom=None):
+    def drop_if_exists(self, custom=None):
+        '''
+            Invoked to drop databases or tables that exist
+        '''
+        self.ready = True
+        logger.debug('Dropping %s (%s)', self.databases, custom)
+        logger.debug('Dropping %s (%s)', self.tables, custom)
+        return
+
+    def insert(self, database, table=None, custom=None):
         '''
         Insert a record
         '''
+        logger.debug('Inserting into %s.%s (%s)', database, table, custom)
         return time.time()
 
-    def delete(self, database, table, custom=None):
+    def delete(self, database, table=None, custom=None):
         '''
         Delete a record
         '''
+        logger.debug('Deleting from %s.%s with %s', database, table, custom)
         return time.time()
 
-    def update(self, database, table, custom=None):
+    def update(self, database, table=None, custom=None):
         '''
         update a record
         '''
+        logger.debug('Updating %s.%s (%s)', database, table, custom)
         return time.time()
 
-    def select(self, database, table, custom=None):
+    def select(self, database, table=None, custom=None):
         '''
         select a set of records.
         '''
+        logger.debug('Selecting from %s.%s (%s)', database, table, custom)
+        return time.time()
+
+    def truncate(self, database, table=None, custom=None):
+        '''
+        Truncate a table/collection/bucket
+        '''
+        logger.debug('Truncating %s.%s with %s', database, table, custom)
         return time.time()
 
     def insert_some(self, custom=None):
@@ -105,15 +130,19 @@ class Loader(object):
         '''
         if not self.conn:
             self.get_connection()
-        if not self.ready:
-            self.create_if_not_exists(custom)
         results = []
 
         pool = Pool(self.concurrency)
         for database in self.databases:
-            for table in self.tables:
+            if len(self.tables) > 0:
+                for table in self.tables:
+                    logger.debug('Deleting from %s.%s (%s)', database, table, custom)
+                    for delete in range(self.deletes):
+                        results.append(pool.spawn(self.delete, database, table, custom))
+            else:
+                logger.debug('Deleting from %s (%s)', database, custom)
                 for delete in range(self.deletes):
-                    results.append(pool.spawn(self.delete, database, table, custom))
+                    results.append(pool.spawn(self.delete, database, None, custom))
         pool.join()
         deleted = [r.get() for r in results]
         return deleted
@@ -156,6 +185,30 @@ class Loader(object):
         pool.join()
         selected = [r.get() for r in results]
         return selected
+
+    def delete_all(self, custom="truncate table"):
+        '''
+        Delete a all data from a database/table/collection
+         but don't actually drop the database(s)/table(s)/collection(s)
+        '''
+        logger.debug(' - delete_all(%s)', custom)
+        if not self.conn:
+            self.get_connection()
+        results = []
+
+        pool = Pool(self.concurrency)
+        for database in self.databases:
+            if len(self.tables) > 0:
+                for table in self.tables:
+                    custom = custom + "{0};".format(table)
+                    logger.debug('Deleting everything! (%s.%s :%s)', database, table, custom)
+                    results.append(pool.spawn(self.truncate, database, table, custom))
+            else:
+                logger.debug('Deleting everything! (%s :%s)', database, custom)
+                results.append(pool.spawn(self.truncate, database, None, custom))
+        pool.join()
+        deleted = [r.get() for r in results]
+        return deleted
 
     def load_run(self, custom=None):
         '''
