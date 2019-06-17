@@ -15,7 +15,7 @@ from . import logger
 class RiakLoader(Loader):
     ''' Class for load testing Riak. '''
 
-    def __init__(self, protocol, host='localhost', port=8098): 
+    def __init__(self, protocol, host='localhost', port=8098):
         '''
         Initialize a RiakLoader
         '''

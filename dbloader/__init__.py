@@ -60,14 +60,6 @@ class Loader(object):
         logger.debug('Creating %s (%s)', self.databases, custom)
         self.ready = True
         return
-           self.databases = ['dbl_1', 'dbl_2', 'dbl_3']
-        self.tables = ['ltc1', 'ltc2', 'ltc3']
-        self.concurrency = 20
-        self.host = 'localhost'
-        self.port = 3306
-        self.ready = False
-        self.conn = None
-        self.deletes = 0
 
     def drop_if_exists(self, custom=None):
         '''
