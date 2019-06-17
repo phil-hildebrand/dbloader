@@ -127,25 +127,19 @@ class RiakLoader(Loader):
         tbucket = self.conn.bucket(bucket_name)
         keycount = 0
         get_one = 0
-        kfile = self.keyfile + ".{0}".format(bucket_name)
-        with open(kfile, "w") as myFile:
-            try:
-                with closing(self.conn.stream_keys(tbucket, self.timeout)) as keys:
-                    for key_list in keys:
-                        for key in key_list:
-                            keycount = keycount + 1
-                            myFile.write("%s\n" % key)
-            except Exception as e:
-                logger.error("Unknown exception for %s (%s)", bucket_name, e)
-                pass
+        deletes = []
+        try:
+            tpool = Pool(self.concurrency)
+            with closing(self.conn.stream_keys(tbucket, self.timeout)) as keys:
+                for key in keys:
+                    keycount = keycount + 1
+                    deletes.append(tpool.spawn(self.delete, bucket_name, None, key.strip()))
+            tpool.join()
+        except Exception as e:
+            logger.error("Unable to stream keys from Riak for %s (%s)", bucket_name, e)
+            pass
 
         logger.debug('Found %s keys in %s', keycount, bucket_name)
-        deletes = []
-        tpool = Pool(self.concurrency)
-        with open(kfile, "r") as myFile:
-            for key in myFile:
-                deletes.append(tpool.spawn(self.delete, bucket_name, None, key.strip()))
-        tpool.join()
         logger.debug('Deleted %s keys from %s', len(deletes), bucket_name)
 
         return len(deletes)

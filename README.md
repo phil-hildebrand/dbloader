@@ -12,7 +12,7 @@ Basic load test tool for databases
 
 # Requirements
 
-- python 2.7
+- python 3 ( With Riak loader, use 3.6 )
 - pip
 
 # Installation
